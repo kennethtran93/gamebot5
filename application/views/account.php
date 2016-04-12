@@ -77,7 +77,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 				</tr>
 				<tr>
 					<td style="text-align:right;">Max Image Dimension:</td>
-					<td><b>135px x 160px</b></td>
+					<td><b>175px x 200px</b></td>
 					<td></td>
 				</tr>
 				<tr>
