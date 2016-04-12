@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-12 11:38 - Added Buy controller and got csv from the server
 * 2016-04-10 03:15 - Fixed player last update bug.
 * 2016-04-10 02:55 - Added User Registration features, including password reset.  Added feature: showing additional links when logged in.  Optimized some back-end stuff.
 * 2016-04-07 13:50 - Added padding in the content and moved login into the menu bar
