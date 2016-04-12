@@ -14,6 +14,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <div class="center">
 	<div class="contentleft">
 		<div id="avatar">
+			<span class="helper"></span>
 			<img id="avatarImg" alt="User Avatar" src="{avatar}" />
 		</div>
 		<div id="playerDetails">

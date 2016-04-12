@@ -3,6 +3,9 @@
 
 ### Changelog for Assignment 2
 * 2016-04-12 11:38 - Added Buy controller and got csv from the server
+* 2016-04-12 11:32 - Added Account Info link to navigation for all.
+* 2016-04-12 11:22 - Added User Avatar Uploads on registration and change views, with some minor formatting for forms and avatar img.
+* 2016-04-11 20:22 - Game status is finished, displayed on front page.
 * 2016-04-10 03:15 - Fixed player last update bug.
 * 2016-04-10 02:55 - Added User Registration features, including password reset.  Added feature: showing additional links when logged in.  Optimized some back-end stuff.
 * 2016-04-07 13:50 - Added padding in the content and moved login into the menu bar

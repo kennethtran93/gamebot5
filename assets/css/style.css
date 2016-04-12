@@ -79,7 +79,7 @@ label {
 	color: white;
 }
 
-#registration label {
+#registration label, #accountInfo label {
 	color: black;
 }
 

@@ -88,13 +88,6 @@ class Application extends CI_Controller {
 		// Additional links for logged in user
 		if ($this->session->username != "")
 		{
-			$link = array();
-			$link['appRoot'] = $this->data['appRoot'];
-			$link['name'] = 'Account Info';
-			$link['link'] = '/account';
-
-			$tempMenu['menuname'][] = $link;
-
 			// Admin Menu Link
 			if ($this->session->accessLevel == 99)
 			{
@@ -198,13 +191,17 @@ class Application extends CI_Controller {
 		{
 			$this->data['loginMessage'] = $this->session->loginMessage;
 		}
-		
+
 
 		$this->data['content'] = $this->parser->parse($this->data['pagebody'], $this->data, true);
 		// finally, build the browser page!
 		$this->data['data'] = &$this->data;
 		$this->parser->parse('_template', $this->data);
 	}
+
+	/*
+	 * User Session Function - handles login / logout and its form to display
+	 */
 
 	function userSession()
 	{
@@ -272,11 +269,13 @@ class Application extends CI_Controller {
 			{
 				// logout button clicked
 				$this->session->sess_destroy();
+				// Normally a successfully logged out message would be generated, 
+				// but since we're doing a redirect after destroying a session, it's useless.
 				redirect($_SERVER['REQUEST_URI']);
 			} else
 			{
 				// User still logged in.
-				$this->data['loginMessage'] = "Done playing, " . $this->session->username . "?  If so, don't forget to log out using the button above.";
+				$this->data['loginMessage'] = "Done playing, " . $this->session->username . "?  If so, don't forget to log out.";
 				$player['player'] = $this->session->username;
 				$display = $this->parser->parse('_loggedIn', $player, true);
 			}
@@ -284,6 +283,56 @@ class Application extends CI_Controller {
 
 		// Send for CI parsing!
 		$this->data['userSession'] = $display;
+	}
+
+	/*
+	 * Gets the status of the botcards server
+	 */
+
+	function getStatus()
+	{
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, "http://botcards.jlparry.com/status");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_POST, true);
+		$result = curl_exec($ch);
+		curl_close($ch);
+		$xml = simplexml_load_string($result);
+		$msg = "round: " . $xml->round . " | ";
+		$msg .= "state: " . $xml->state . " | ";
+		$msg .= "countdown: " . $xml->countdown . " | ";
+		$msg .= "description: " . $xml->desc;
+		return $msg;
+	}
+
+	/*
+	 * Generic function for avatar uploading
+	 */
+
+	function avatar_upload()
+	{
+		$config['upload_path'] = './assets/images/avatar/';
+		$config['allowed_types'] = 'jpeg|jpg|png';
+		$config['max_size'] = 2048;
+		$config['max_width'] = 135;
+		$config['max_height'] = 160;
+		$config['encrypt_name'] = TRUE;
+
+		$this->load->library('upload', $config);
+
+		if (!$this->upload->do_upload('avatarUpload'))
+		{
+			return array(
+				'uploaded'		 => FALSE,
+				'display_errors' => $this->upload->display_errors()
+			);
+		} else
+		{
+			return array(
+				'uploaded'		 => TRUE,
+				'upload_data'	 => $this->upload->data()
+			);
+		}
 	}
 
 }

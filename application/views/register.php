@@ -13,7 +13,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 </div>
 <br /><br />
 <div id="registration">
-	<form method="POST">
+	<form method="POST" enctype="multipart/form-data">
 		<table>
 			<tr>
 				<td><label for="regUsername">Username:</label></td>
@@ -35,6 +35,31 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 					<input type="password" name="regConfirmPassword" id="regConfirmPassword" class="textbox" value=""/>
 				</td>
 				<td><span class="error">{regPasswordError}</td>
+			</tr>
+			<tr>
+				<td><label for="avatarUpload">Avatar Upload:</label></td>
+				<td><input type="file" name="avatarUpload" id="avatarUpload" accept=".jpeg, .jpg, .png"/></td>
+				<td><span class="error">{avatarError}</span></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td><input type="checkbox" name="useGenericAvatar" id="useGenericAvatar" value="generic" /><label for="useGenericAvatar">Use Generic Avatar</label></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td style="text-align:right;">Supported File Type:</td>
+				<td><b>*.jpeg, *.jpg, *.png</b></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td style="text-align:right;">Max File Size:</td>
+				<td><b>2 MB</b></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td style="text-align:right;">Max Image Dimension:</td>
+				<td><b>135px x 160px</b></td>
+				<td></td>
 			</tr>
 			<tr>
 				<td></td>

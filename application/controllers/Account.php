@@ -29,6 +29,7 @@ class Account extends Application {
 		$this->data['pagebody'] = 'register'; // this is the view we want shown
 		$this->data['regUsernameError'] = "";
 		$this->data['regPasswordError'] = "";
+		$this->data['avatarError'] = "";
 
 		switch ($action)
 		{
@@ -49,7 +50,7 @@ class Account extends Application {
 				}
 
 				//  At this point Not Logged In
-				$this->data['pageTitle'] = 'Player Account Info';
+				$this->data['pageTitle'] = 'Player Account Registration';
 				$this->data['regUsername'] = $this->session->regUsername;
 				if (!is_null($this->input->post('regSubmit')))
 				{
@@ -93,11 +94,33 @@ class Account extends Application {
 						$this->data['regPasswordError'] = "Passwords entered do not match.";
 					}
 
+					// Prepare generic avatar filename
+					$avatarFile = 'generic_photo.png';
+					// Check if all previous checks are validated before running this
+					if ($valid && is_null($this->input->post('useGenericAvatar')))
+					{
+						// Generic Avatar Checkbox not checked.
+						// Attempt to perform file upload
+						$result = $this->avatar_upload();
+						if ($result['uploaded'])
+						{
+							// File Uploaded, supposedly passed validation
+							// Insert encoded filename for insert with new player registration
+							$avatarFile = $result['upload_data']['file_name'];
+						} else
+						{
+							// File Upload failed.  Reasons stated.
+							$valid = false;
+							$this->data['avatarError'] = $result['display_errors'];
+						}
+					}
+
 					if ($valid)
 					{
 						$newPlayer = array(
 							'Player'	 => $regUsername,
-							'Password'	 => password_hash($regPassword, PASSWORD_DEFAULT)
+							'Password'	 => password_hash($regPassword, PASSWORD_DEFAULT),
+							'Avatar'	 => $avatarFile
 						);
 						$this->players->add($newPlayer);
 						$this->data['pageTitle'] = "Player Registration Complete";
@@ -173,6 +196,77 @@ class Account extends Application {
 							$this->data['staticMessage'] = "Congratulations, " . $name . "!  Your account password has been successfully changed.  ";
 						}
 					}
+
+					if (!is_null($this->input->post('avatarChange')))
+					{
+						// Prepare generic avatar filename
+						$avatarFile = 'generic_photo.png';
+						$valid = true;
+						// Check if all previous checks are validated before running this
+						if (is_null($this->input->post('useGenericAvatar')))
+						{
+							// Generic Avatar Checkbox not checked.
+							// Attempt to perform file upload
+							$result = $this->avatar_upload();
+							if ($result['uploaded'])
+							{
+								// File Uploaded, supposedly passed validation
+								// Insert encoded filename for insert with new player registration
+								$avatarFile = $result['upload_data']['file_name'];
+
+								// Get current avatar for player.  Delete if not generic.
+								$curAvatar = $this->players->get(strtolower($name))->Avatar;
+								if (strcasecmp($curAvatar, "generic_photo.png") <> 0)
+								{
+									// Player's current avatar is not a generic image.
+									// Using PHP's Delete file function
+									$deleted = unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
+									if ($deleted)
+									{
+										$this->session->loginMessage = "Your avatar has been successfully replaced with the uploaded avatar you've chosen.";
+									} else
+									{
+										$this->session->loginMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
+									}
+								}
+							} else
+							{
+								// File Upload failed.  Reasons stated.
+								$valid = false;
+								$this->data['avatarError'] = $result['display_errors'];
+							}
+						} else
+						{
+							// Generic Avatar Photo checkbox checked.
+							// Get current avatar for player.  Delete if not generic.
+							$curAvatar = $this->players->get(strtolower($name))->Avatar;
+							if (strcasecmp($curAvatar, "generic_photo.png") <> 0)
+							{
+								// Player's current avatar is not a generic image.
+								// Using PHP's Delete file function
+								$deleted = unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
+								if ($deleted)
+								{
+									$this->session->loginMessage = "Your avatar has been successfully replaced with our generic avatar.";
+								} else
+								{
+									$this->session->loginMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
+								}
+							}
+						}
+
+						if ($valid)
+						{
+							$updatePlayer = array(
+								'Player'		 => strtolower($name),
+								'Avatar'		 => $avatarFile,
+								'LastUpdated'	 => date('Y-m-d H:i:s')
+							);
+							$this->players->update($updatePlayer);
+							$this->data['pageTitle'] = "Player Avatar Change Complete";
+							$this->data['staticMessage'] = "Congratulations, " . $name . "!  Your account avatar has been successfully changed.  ";
+						}
+					}
 					// Get Player Data
 					$player = $this->players->get($name);
 					$this->data['username'] = $player->Player;
@@ -183,7 +277,6 @@ class Account extends Application {
 				} else
 				{
 					// not logged in
-					$this->session->loginMessage = "Invalid session.  Please try again.";
 					$this->data['staticMessage'] = "Viewing or Modifiying your account information requires you to be logged in first!";
 				}
 				break;

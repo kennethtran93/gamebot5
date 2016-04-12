@@ -33,6 +33,7 @@ DROP TABLE IF EXISTS `players`;
 CREATE TABLE IF NOT EXISTS `players` (
 	`Player`			VARCHAR(25)									NOT NULL,
 	`Password`			VARCHAR(255)								NOT NULL,
+	`Avatar`			VARCHAR(255)	DEFAULT 'generic_photo.png' NOT NULL,
 	`AccessLevel`		INT				DEFAULT '1'					NOT NULL,
 	`DateRegistered`	TIMESTAMP		DEFAULT CURRENT_TIMESTAMP	NOT NULL,
 	`LastUpdated`		DATETIME,

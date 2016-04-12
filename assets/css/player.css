@@ -13,9 +13,24 @@ div.contentleft {
 	float: left;
 }
 
-#avatar > img {
-	padding: 1.5em;
+#avatar {
+	width: 187px;
+	height: 216.5px;
 	border: 2px #002166 solid;
+	white-space: nowrap;
+	text-align: center;
+}
+
+#avatar .helper {
+	display: inline-block;
+	height: 100%;
+	vertical-align: middle;
+}
+
+#avatar #avatarImg {
+	vertical-align: middle;
+	max-width: 135px;
+	max-height: 160px;
 }
 
 div.content-right {

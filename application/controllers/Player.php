@@ -111,20 +111,20 @@ class Player extends Application {
 		return $players;
 	}
 
-	//Retrive a user's Avatar from the DB (to be implented in the future)
+	//Retrive a user's Avatar filename from the DB 
 	function getAvatar($name = null)
 	{
-//		if (is_null($name) || $name == "" || !$this->players->exists($name))
-//		{
-//			// Unregistered user
-//			return $this->data['appRoot'] . "/images/bot/generic_photo.png";
-//		} else
-//		{
-//			// Name is given and exists, grab that player's peanut count
-//			return $this->players->get($name)->Avatar;
-//		}
-		// To be implemented properly in a later version.  For now, everyone gets a generic avatar
-		return $this->data['appRoot'] . "/assets/images/generic_photo.png";
+		$avatarPath = $this->data['appRoot'] . "/assets/images/avatar/";
+
+		if (is_null($name) || $name == "" || !$this->players->exists($name))
+		{
+			// Unregistered user
+			return $avatarPath . "generic_photo.png";
+		} else
+		{
+			// Checks if the file for the player exists in our filesystem.  else output generic image
+			return (file_exists($_SERVER['DOCUMENT_ROOT'] . $avatarPath . $this->players->get($name)->Avatar) ? ($avatarPath . $this->players->get($name)->Avatar) : ($avatarPath . 'generic_photo.png'));
+		}
 	}
 
 	//Get Player Peanut count
