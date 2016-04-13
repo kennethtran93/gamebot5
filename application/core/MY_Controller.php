@@ -257,7 +257,8 @@ class Application extends CI_Controller {
 	 * Gets the status of the botcards server
 	 */
 
-	function getStatus($output = true) {
+	function getStatus($output = true)
+	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, "http://botcards.jlparry.com/status");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -265,18 +266,23 @@ class Application extends CI_Controller {
 		$result = curl_exec($ch);
 		curl_close($ch);
 		$xml = simplexml_load_string($result);
-		if ($output) {
-			$msg = "round: " . $xml->round . " | ";
-			$msg .= "state: " . $xml->state . " | ";
-			$msg .= "countdown: " . $xml->countdown . " seconds" . " | ";
-			$msg .= "description: " . $xml->desc;
-			return $msg;
-		} else {
+		if($output) {
+		$msg = "round: " . $xml->round . " | ";
+		$msg .= "state: " . $xml->state . " | ";
+		$msg .= "description: " . $xml->desc . " | ";
+		$msg .= "countdown: " . $xml->countdown . " seconds" . " until " . $xml->upcoming ." | ";
+		$msg .= "current time: " . $xml->now . " | ";
+		$msg .= "close time: " . $xml->alarm . " | ";
+		return $msg;
+		}
+		else {
 			return array(
 				"round" => $xml->round,
 				"state" => $xml->state,
 				"countdown" => $xml->countdown,
 				"desc" => $xml->desc,
+				"now" => $xml->now,
+				"alarm" => $xml->alarm
 			);
 		}
 	}
