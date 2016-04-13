@@ -52,6 +52,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $route['player/(:any)'] = 'player/index/$1';
 $route['account/(:any)'] = 'account/index/$1';
+$route['admin/(:any)'] = 'admin/index/$1';
 
 
 $route['default_controller'] = 'welcome';

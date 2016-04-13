@@ -124,7 +124,7 @@ class Account extends Application {
 						);
 						$this->players->add($newPlayer);
 						$this->data['pageTitle'] = "Player Registration Complete";
-						$this->session->loginMessage = "Player Registration values have passed validation!";
+						$this->session->statusMessage = "Player Registration values have passed validation!";
 						$this->data['staticMessage'] = "Congratulations!  Your account has been created with the username [ " . $regUsername . " ].  Simply login above to get started.";
 					}
 				} else
@@ -192,7 +192,7 @@ class Account extends Application {
 							);
 							$this->players->update($updatePlayer);
 							$this->data['pageTitle'] = "Password Change Successful!";
-							$this->session->loginMessage = "Player password changed!";
+							$this->session->statusMessage = "Player password changed!";
 							$this->data['staticMessage'] = "Congratulations, " . $name . "!  Your account password has been successfully changed.  ";
 						}
 					}
@@ -223,10 +223,10 @@ class Account extends Application {
 									$deleted = unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
 									if ($deleted)
 									{
-										$this->session->loginMessage = "Your avatar has been successfully replaced with the uploaded avatar you've chosen.";
+										$this->session->statusMessage = "Your avatar has been successfully replaced with the uploaded avatar you've chosen.";
 									} else
 									{
-										$this->session->loginMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
+										$this->session->statusMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
 									}
 								}
 							} else
@@ -247,10 +247,10 @@ class Account extends Application {
 								$deleted = unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
 								if ($deleted)
 								{
-									$this->session->loginMessage = "Your avatar has been successfully replaced with our generic avatar.";
+									$this->session->statusMessage = "Your avatar has been successfully replaced with our generic avatar.";
 								} else
 								{
-									$this->session->loginMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
+									$this->session->statusMessage = "Your avatar has been replaced, but the original file could not be deleted.  This is just a message for the administrators.";
 								}
 							}
 						}
