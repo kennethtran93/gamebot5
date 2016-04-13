@@ -2,6 +2,9 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-12 16:15 - Added more info to be displayed about game status
+* 2016-04-12 14:42 - Added Agent Registration function
+* 2016-04-12 12:49 - Adjusted gameStatus, to put data into an array under certain circumnstances
 * 2016-04-12 12:07 - Adjusted gameStatus
 * 2016-04-12 12:00 - Increased Avatar Size to 175px x 200px
 * 2016-04-12 11:32 - Added Account Info link to navigation for all.
