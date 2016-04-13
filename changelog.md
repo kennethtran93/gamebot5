@@ -4,7 +4,6 @@
 ### Changelog for Assignment 2
 * 2016-04-12 12:07 - Adjusted gameStatus
 * 2016-04-12 12:00 - Increased Avatar Size to 175px x 200px
-* 2016-04-12 11:38 - Added Buy controller and got csv from the server
 * 2016-04-12 11:32 - Added Account Info link to navigation for all.
 * 2016-04-12 11:22 - Added User Avatar Uploads on registration and change views, with some minor formatting for forms and avatar img.
 * 2016-04-11 20:22 - Game status is finished, displayed on front page.
