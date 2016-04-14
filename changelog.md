@@ -2,6 +2,8 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-13 18:00 - Optimized Agent Registration (and added sql to generate the agent db table), Game status now shows on all pages, formatting for static messages, fix for Admin Delete Accounts
+* 2016-04-13 03:00 - Player Management sections complete, Agent DB Sql Create, minor renaming of variables, added DB TRUNCATE to Model Class, adjusted Site Title
 * 2016-04-12 16:15 - Added more info to be displayed about game status
 * 2016-04-12 14:42 - Added Agent Registration function
 * 2016-04-12 12:49 - Adjusted gameStatus, to put data into an array under certain circumnstances

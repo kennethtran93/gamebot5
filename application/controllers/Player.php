@@ -49,6 +49,7 @@ class Player extends Application {
 		{
 			// Display message instead of regular page
 			$this->data['staticMessage'] = "We're sorry, but at this time only registered users can view other player details.  Simply register/login in the navigation bar to continue.";
+			$this->data['staticMessageType'] = "staticError";
 		} else
 		{
 			// Username exists and in db

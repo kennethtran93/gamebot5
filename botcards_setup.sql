@@ -26,6 +26,20 @@ CREATE TABLE IF NOT EXISTS `ci_sessions` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `agent`
+--
+DROP TABLE IF EXISTS `agent`;
+CREATE TABLE IF NOT EXISTS `agent` (
+	`auth_token`		VARCHAR(100)								NOT NULL,
+	`code`				VARCHAR(5)									NOT NULL,
+	`name`				VARCHAR(100)								NOT NULL,
+	`last_updated`		DATETIME		DEFAULT CURRENT_TIMESTAMP	NOT NULL,
+	`round_registered`	INT(10)										NOT NULL,
+	CONSTRAINT `agent_pk`
+		PRIMARY KEY(`auth_token`)
+);
+
+--
 -- Table structure for table `players`
 --
 

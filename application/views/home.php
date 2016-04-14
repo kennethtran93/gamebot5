@@ -5,11 +5,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 ?>
 <div class="content-left">
-	<div id="game_status" class="box">
-		<h3>Game Status</h3>
-		{gameStatus}
-	</div>
-	<br/>
 	<div id="bot_summary" class="box">
 		<h3>Bot Piece Summary</h3>
 		<table id="botSummary" class="display">
