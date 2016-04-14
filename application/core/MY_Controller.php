@@ -8,7 +8,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Default application controller
  *
  */
-class Application extends CI_Controller {
+class Application extends CI_Controller
+{
 
 	protected $data = array();   // parameters for view components
 	protected $id;  // identifier for our content
@@ -40,7 +41,7 @@ class Application extends CI_Controller {
 		$this->data['debug'] = "";
 
 		$this->data['staticMessage'] = "";
-		
+
 		$this->data['staticMessageType'] = "";
 
 		// This special line of code will check if the application is running in a folder or not
@@ -80,6 +81,10 @@ class Application extends CI_Controller {
 		$this->userSession();
 
 		$this->agentRegister();
+
+		$this->buy();
+		
+		$this->series->getGameData();
 	}
 
 	/**
@@ -341,14 +346,14 @@ class Application extends CI_Controller {
 		if (!$this->upload->do_upload('avatarUpload'))
 		{
 			return array(
-				'uploaded'		 => FALSE,
+				'uploaded' => FALSE,
 				'display_errors' => $this->upload->display_errors()
 			);
 		} else
 		{
 			return array(
-				'uploaded'		 => TRUE,
-				'upload_data'	 => $this->upload->data()
+				'uploaded' => TRUE,
+				'upload_data' => $this->upload->data()
 			);
 		}
 	}
@@ -400,6 +405,43 @@ class Application extends CI_Controller {
 		}
 	}
 
+	function buy()
+	{
+		//get the data from all tables
+		$getAgent = $this->agent->all()[0];
+
+		//calling the columns from the database players column
+		$team = $getAgent->code;
+		$token = $getAgent->auth_token;
+		$player = $this->session->userdata('username'); // current player name
+		
+		$buyInfo = array($team, $token, $player);
+
+		$string = http_build_query($buyInfo);
+
+		//send post request to BCC/buy 
+		$posturl = curl_init($this->serverURL . '/buy');
+		curl_setopt($posturl, CURLOPT_POST, true);
+		curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
+		curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
+
+		$response = curl_exec($posturl);
+		curl_close($posturl);
+
+		$xml = simplexml_load_string($response);
+
+		foreach ($xml->certificate as $certificate)
+		{
+			$timestamp = date(DATE_ATOM, (int) $certificate->datetime);
+			$data = array(
+				'token' => (string) $certificate->token,
+				'piece' => (string) $certificate->piece,
+				'player' => (string) $certificate->player,
+				'datetime' => $timestamp
+			);
+			$this->db->insert('collections', $data); // insert into database
+		}
+	}
 }
 
 /* End of file MY_Controller.php */

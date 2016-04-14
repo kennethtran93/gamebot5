@@ -17,17 +17,21 @@ class Series extends MY_Model
 
 	function getGameData()
 	{
-		if (($handle = fopen("http://botcards.jlparry.com/data/series", "r")) !== FALSE)
+		if (($handle = fopen("http://ken-botcards.azurewebsites.net/data/series", "r")) !== FALSE)
 		{
 			fgetcsv($handle, ",");
 			while (($data = fgetcsv($handle, ",")) !== FALSE)
 			{
 				print_r($data);
+
+				//update local database from the csv
+				// Token changed.  Update Database accordingly.
+				// Delete Record / Truncate Table
+				$this->series->truncate();
+
+				fclose($handle);
 			}
-			fclose($handle);
 		}
 	}
-	
-//	$this->series->getGameData();
-
 }
+	

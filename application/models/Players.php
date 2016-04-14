@@ -14,29 +14,4 @@ class Players extends MY_Model
 	{
 		parent::__construct('players', 'Player');
 	}
-
-	function buy($team, $token, $player)
-	{
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "http://ken-botcards.azurewebsites.net/buy");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_POST, true);
-		$result = curl_exec($ch);
-		curl_close($ch);
-		$xml = simplexml_load_string($result);
-
-		foreach ($xml->certificate as $certificate)
-		{
-			$timestamp = date(DATE_ATOM, (int) $certificate->datetime);
-			$data = array(
-				'token' => (string) $certificate->token,
-				'piece' => (string) $certificate->piece,
-				'broker' => (string) $certificate->broker,
-				'player' => (string) $certificate->player,
-				'datetime' => $timestamp
-			);
-			$this->db->insert('collections', $data); // insert into database
-		}
-	}
-
 }
