@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-14 09:33 - Done implementing the buy function
 * 2016-04-12 16:15 - Added more info to be displayed about game status
 * 2016-04-12 14:42 - Added Agent Registration function
 * 2016-04-12 12:49 - Adjusted gameStatus, to put data into an array under certain circumnstances

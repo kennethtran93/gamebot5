@@ -18,9 +18,8 @@ class Buy extends Application
 
 	private function purchaseCard()
 	{
-
-		$team = "A05"; // team name
-		$token = "6d5d68ace9f79b2eb469f486b651a40d"; // token, team must have been registered
+		$team = $this->agents->team_id; // team name
+		$token = $this->agents->auth_token; // token, team must have been registered
 		$player = $this->session->userdata('username'); // current playername stored in session data
 		$success = $this->players->buy($team, $token, $player);
 
@@ -29,5 +28,4 @@ class Buy extends Application
 			echo 'The card pack is purchased.';
 		}
 	}
-
 }

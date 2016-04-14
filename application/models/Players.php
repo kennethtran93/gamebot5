@@ -18,7 +18,7 @@ class Players extends MY_Model
 	function buy($team, $token, $player)
 	{
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, "http://botcards.jlparry.com/buy");
+		curl_setopt($ch, CURLOPT_URL, "http://ken-botcards.azurewebsites.net/buy");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_POST, true);
 		$result = curl_exec($ch);
