@@ -125,7 +125,9 @@ class Account extends Application {
 						$this->players->add($newPlayer);
 						$this->data['pageTitle'] = "Player Registration Complete";
 						$this->session->statusMessage = "Player Registration values have passed validation!";
+
 						$this->data['staticMessage'] = "Congratulations!  Your account has been created with the username [ " . $regUsername . " ].  Simply login above to get started.";
+						$this->data['staticMessageType'] = "staticSuccess";
 					}
 				} else
 				{
@@ -193,7 +195,9 @@ class Account extends Application {
 							$this->players->update($updatePlayer);
 							$this->data['pageTitle'] = "Password Change Successful!";
 							$this->session->statusMessage = "Player password changed!";
+
 							$this->data['staticMessage'] = "Congratulations, " . $name . "!  Your account password has been successfully changed.  ";
+							$this->data['staticMessageType'] = "staticSuccess";
 						}
 					}
 
@@ -264,7 +268,9 @@ class Account extends Application {
 							);
 							$this->players->update($updatePlayer);
 							$this->data['pageTitle'] = "Player Avatar Change Complete";
+
 							$this->data['staticMessage'] = "Congratulations, " . $name . "!  Your account avatar has been successfully changed.  ";
+							$this->data['staticMessageType'] = "staticSuccess";
 						}
 					}
 					// Get Player Data
@@ -278,6 +284,7 @@ class Account extends Application {
 				{
 					// not logged in
 					$this->data['staticMessage'] = "Viewing or Modifiying your account information requires you to be logged in first!";
+					$this->data['staticMessageType'] = "staticError";
 				}
 				break;
 			default:

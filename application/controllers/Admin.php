@@ -29,6 +29,7 @@ class Admin extends Application {
 			{
 				// User logged in does not have admin priviledges.
 				$this->data['staticMessage'] = "Nice try, but you don't have admin priviledges on this site.";
+				$this->data['staticMessageType'] = "staticError";
 			} else
 			{
 				// User has admin priviledges
@@ -144,7 +145,7 @@ class Admin extends Application {
 							}
 							$this->session->statusMessage = $count . " accounts had their password reset to their username.";
 							redirect('/admin/player');
-						} elseif (!is_null($this->input->post('confirmDeleteAccount')))
+						} elseif (!is_null($this->input->post('confirmDeleteAccounts')))
 						{
 							// Delete Account(s) confirmed
 							$selected = array();
@@ -154,7 +155,7 @@ class Admin extends Application {
 							{
 								foreach ($post as $key => $value)
 								{
-									if ($key != 'confirmDeleteAccount')
+									if ($key != 'confirmDeleteAccounts')
 									{
 										(is_object($this->players->delete($key)) ? $count++ : NULL);
 									}
@@ -239,7 +240,7 @@ class Admin extends Application {
 		{
 			// User not logged in.
 			$this->data['staticMessage'] = "Please login with an administrative account to access the administrative functions.";
-			$this->data['pagebody'] = "_message";
+			$this->data['staticMessageType'] = "staticError";
 		}
 
 		// Render Page!

@@ -8,13 +8,6 @@ div.content-left {
 	display: inline-block;
 }
 
-#game_status{
-	padding-top: 1em; 
-	padding-left: 1em; 
-	border: black solid 1.5px;
-	border-top: #004A75 solid 1.5em;
-	min-height: 150px;
-}
 #bot_summary {
 	border: black solid 1.5px;
 	min-height: 150px;
