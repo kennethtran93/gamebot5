@@ -9,17 +9,36 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 </form>
 <div id="player_admin" class="box">
 	<h3>Player Administration</h3>
-	<p>Check of the player you wish to manage for the same action.</p>
-	<ul>
-		<li>Reset Passwords:  Password will be reset to their username.</li>
-		<li>Delete Accounts:  Player Accounts will be removed from the database.</li>
-		<li>Reset Avatars:  Custom avatars will be replaced with the generic avatar.</li>
-	</ul>
+	<p>Select the player(s) you wish to manage for the same action.</p>
+	<table>
+		<tr>
+			<th>Action</th><th>Description</th>
+		</tr>
+		<tr>
+			<td>Reset Passwords:</td><td>Password will be reset to their username</td>
+		</tr>
+		<tr>
+			<td>Delete Accounts:</td><td>Player Accounts will be removed from the database.</td>
+		</tr>
+		<tr>
+			<td>Reset Avatars:</td><td>Custom avatars will be replaced with the generic avatar.</td>
+		</tr>
+		<tr>
+			<td>Promote to Admin:</td><td>Make account an admin account.</td>
+		</tr>
+		<tr>
+			<td>Remove Admin Status:</td><td>Make account not an admin account.</td>
+		</tr>
+	</table>
+	<br />
 	<form method="POST">
-		With selected players:
+		With selected player(s):
 		<input type="submit" name="resetPasswords" value="Reset Passwords" />
 		<input type="submit" name="deleteAccounts" value="DELETE Accounts" />
 		<input type="submit" name="resetAvatars" value="Reset to Generic Avatar" />
+		<input type="submit" name="promoteToAdmin" value="Promote to Admin" />
+		<input type="submit" name="removeAdmin" value="Remove Admin Status" />
+		<br /><br />
 		<table id="allPlayers" class="display">
 			<thead>
 				<tr>
@@ -47,10 +66,12 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 				{botPlayers}
 			</tbody>
 		</table>
-		With selected players:
+		With selected player(s):
 		<input type="submit" name="resetPasswords" value="Reset Passwords" />
 		<input type="submit" name="deleteAccounts" value="Delete Accounts" />
 		<input type="submit" name="resetAvatars" value="Reset to Generic Avatar" />
+		<input type="submit" name="promoteToAdmin" value="Promote to Admin" />
+		<input type="submit" name="removeAdmin" value="Remove Admin Status" />
 	</form>
 </div>
 <br />

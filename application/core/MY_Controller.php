@@ -40,7 +40,6 @@ class Application extends CI_Controller {
 		$this->data['debug'] = "";
 
 		$this->data['staticMessage'] = "";
-		
 		$this->data['staticMessageType'] = "";
 
 		// This special line of code will check if the application is running in a folder or not
@@ -72,9 +71,6 @@ class Application extends CI_Controller {
 		 */
 		// set global scripts to load on all pages
 		$this->pageScripts = array('https://code.jquery.com/jquery-2.2.0.min.js');
-
-		// Reset Status Message for each pageload
-		$this->session->statusMessage = "";
 
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
@@ -197,10 +193,14 @@ class Application extends CI_Controller {
 			$this->data['pagebody'] = "_message";
 		}
 
-		if ($this->session->statusMessage != "")
+		$this->data['statusMessage'] = $this->session->loginMessage;
+		
+		if (!empty($this->session->userdata('statusMessage')))
 		{
 			$this->data['statusMessage'] = $this->session->statusMessage;
+			$this->session->unset_userdata('statusMessage');
 		}
+		
 
 		$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
 
@@ -249,21 +249,21 @@ class Application extends CI_Controller {
 							$player['player'] = $this->session->username;
 							$display = $this->parser->parse('_loggedIn', $player, true);
 
-							$this->session->statusMessage = "Login Successful -- Welcome aboard, " . $this->session->username . "!";
+							$this->session->loginMessage = "Login Successful -- Welcome aboard, " . $this->session->username . "!";
 						} else
 						{
 							// invalid password supplied.
-							$this->session->statusMessage = "Invalid Username and Password combination.";
+							$this->session->loginMessage = "Invalid Username and Password combination.";
 						}
 					} else
 					{
 						// Username does not exist.
-						$this->session->statusMessage = "Invalid Username and Password combination.";
+						$this->session->loginMessage = "Invalid Username and Password combination.";
 					}
 				} else
 				{
 					// Either username/password field is blank
-					$this->session->statusMessage = "Missing data in either username or password fields.";
+					$this->session->loginMessage = "Missing data in either username or password fields.";
 				}
 			} elseif (!is_null($this->input->post('register')))
 			{
@@ -271,7 +271,7 @@ class Application extends CI_Controller {
 				redirect("/account/register");
 			} else
 			{
-				$this->session->statusMessage = "You are currently viewing this site as a guest.  Login or register to do more awesome things!";
+				$this->session->loginMessage = "You are currently viewing this site as a guest.  Login or register to do more awesome things!";
 			}
 		} else
 		{
@@ -286,7 +286,8 @@ class Application extends CI_Controller {
 			} else
 			{
 				// User still logged in.
-				$this->data['statusMessage'] = "Done playing, " . $this->session->username . "?  If so, don't forget to log out.";
+				$this->session->loginMessage = "Done playing, " . $this->session->username . "?  If so, don't forget to log out.";
+
 				$player['player'] = $this->session->username;
 				$display = $this->parser->parse('_loggedIn', $player, true);
 			}
