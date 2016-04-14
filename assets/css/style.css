@@ -57,6 +57,7 @@ div#header-in > a > img{
 	padding: 10px; 
 	padding-bottom: 5px;
 }
+
 #content { 
 	width: 100%; 
 	min-height: 500px;
@@ -74,6 +75,30 @@ div#header-in > a > img{
 	font-size: 2em; 
 	margin-top: 0; 
 }
+
+#game_status{
+	padding-left: 1em; 
+	border: black dashed 1.5px;
+	border-left: #004A75 solid 0.5em;
+	border-right: #004A75 solid 0.5em;
+}
+
+#staticError {
+	color: red;
+	background-color: bisque;
+}
+
+#staticSuccess{
+	color: green;
+	background-color: lightgreen;
+}
+
+.staticMessage {
+	padding: 10px 15px;
+	border: 1px solid transparent;
+	border-radius: 4px;
+}
+
 label {
 	text-align: left;
 	color: white;

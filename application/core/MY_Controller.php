@@ -40,6 +40,8 @@ class Application extends CI_Controller {
 		$this->data['debug'] = "";
 
 		$this->data['staticMessage'] = "";
+		
+		$this->data['staticMessageType'] = "";
 
 		// This special line of code will check if the application is running in a folder or not
 		// i.e.:  gamebot5.local will not return anything, whereas localhost/gamebot5 will return /gamebot5
@@ -76,6 +78,7 @@ class Application extends CI_Controller {
 
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
+
 		$this->agentRegister();
 	}
 
@@ -199,6 +202,7 @@ class Application extends CI_Controller {
 			$this->data['statusMessage'] = $this->session->statusMessage;
 		}
 
+		$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
 
 		$this->data['content'] = $this->parser->parse($this->data['pagebody'], $this->data, true);
 		// finally, build the browser page!
@@ -296,34 +300,27 @@ class Application extends CI_Controller {
 	 * Gets the status of the botcards server
 	 */
 
-	function getStatus($output = true)
+	function getStatus()
 	{
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $this->serverURL . "/status");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_POST, true);
 		$result = curl_exec($ch);
 		curl_close($ch);
+
 		$xml = simplexml_load_string($result);
-		if ($output)
+		// Convert object to array
+		$status = get_object_vars($xml);
+		// Just grammatical stuff
+		if ($status['countdown'] == 1)
 		{
-			$msg = "round: " . $xml->round . " | ";
-			$msg .= "state: " . $xml->state . " | ";
-			$msg .= "description: " . $xml->desc . " | ";
-			$msg .= "countdown: " . $xml->countdown . " seconds" . " until " . $xml->upcoming . " (at " . $xml->alarm . " | ";
-			$msg .= "current server/game time: " . $xml->now . " | ";
-			return $msg;
+			$status['s'] = "";
 		} else
 		{
-			return array(
-				"round"		 => $xml->round,
-				"state"		 => $xml->state,
-				"countdown"	 => $xml->countdown,
-				"desc"		 => $xml->desc,
-				"now"		 => $xml->now,
-				"alarm"		 => $xml->alarm
-			);
+			$status['s'] = "s";
 		}
+
+		return $status;
 	}
 
 	/*
@@ -392,11 +389,11 @@ class Application extends CI_Controller {
 
 				//add agent to database
 				$agent = $this->agent->create();
+				$agent->auth_token = (String) $xml->token;
 				$agent->code = $data['team'];
 				$agent->name = $data['name'];
-				$agent->auth_token = (String) $xml->token;
 				unset($agent->last_updated);
-				$agent->round = $status['round'];
+				$agent->round_registered = $status['round'];
 
 				$this->agent->add((array) $agent);
 			}

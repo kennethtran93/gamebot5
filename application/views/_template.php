@@ -26,6 +26,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 			<div id="content">
 				{debug}
 				<div id='content-in'>
+					{gameStatus}
 					<div id="statusMessage"><p>{statusMessage}</p></div>
 					{content}
 				</div>
