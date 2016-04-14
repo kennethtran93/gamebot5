@@ -400,7 +400,43 @@ class Application extends CI_Controller {
 			}
 		}
 	}
+	function buy()
+	{
+		//get the data from all tables
+		$getAgent = $this->agent->all()[0];
 
+		//calling the columns from the database players column
+		$team = $getAgent->code;
+		$token = $getAgent->auth_token;
+		$player = $this->session->userdata('username'); // current player name
+		
+		$buyInfo = array($team, $token, $player);
+
+		$string = http_build_query($buyInfo);
+
+		//send post request to BCC/buy 
+		$posturl = curl_init($this->serverURL . '/buy');
+		curl_setopt($posturl, CURLOPT_POST, true);
+		curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
+		curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
+
+		$response = curl_exec($posturl);
+		curl_close($posturl);
+
+		$xml = simplexml_load_string($response);
+
+		foreach ($xml->certificate as $certificate)
+		{
+			$timestamp = date(DATE_ATOM, (int) $certificate->datetime);
+			$data = array(
+				'token' => (string) $certificate->token,
+				'piece' => (string) $certificate->piece,
+				'player' => (string) $certificate->player,
+				'datetime' => $timestamp
+			);
+			$this->db->insert('collections', $data); // insert into database
+		}
+	}
 }
 
 /* End of file MY_Controller.php */
