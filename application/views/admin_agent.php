@@ -11,6 +11,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 	<h3>Agent Administration Tasks</h3>
 	To be implemented:
 	<ul>
+		<li>Agent Online/Offline Mode</li>
 		<li>Force / Manual Agent Registration</li>
 		<li>Change Agent Code and/or Name</li>
 		<li>Manual Reset of all cards and peanuts</li>

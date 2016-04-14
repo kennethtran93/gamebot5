@@ -8,8 +8,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Default application controller
  *
  */
-class Application extends CI_Controller
-{
+class Application extends CI_Controller {
 
 	protected $data = array();   // parameters for view components
 	protected $id;  // identifier for our content
@@ -41,7 +40,6 @@ class Application extends CI_Controller
 		$this->data['debug'] = "";
 
 		$this->data['staticMessage'] = "";
-
 		$this->data['staticMessageType'] = "";
 
 		// This special line of code will check if the application is running in a folder or not
@@ -74,17 +72,10 @@ class Application extends CI_Controller
 		// set global scripts to load on all pages
 		$this->pageScripts = array('https://code.jquery.com/jquery-2.2.0.min.js');
 
-		// Reset Status Message for each pageload
-		$this->session->statusMessage = "";
-
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
 
 		$this->agentRegister();
-
-		$this->buy();
-		
-		$this->series->getGameData();
 	}
 
 	/**
@@ -202,10 +193,14 @@ class Application extends CI_Controller
 			$this->data['pagebody'] = "_message";
 		}
 
-		if ($this->session->statusMessage != "")
+		$this->data['statusMessage'] = $this->session->loginMessage;
+		
+		if (!empty($this->session->userdata('statusMessage')))
 		{
 			$this->data['statusMessage'] = $this->session->statusMessage;
+			$this->session->unset_userdata('statusMessage');
 		}
+		
 
 		$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
 
@@ -254,21 +249,21 @@ class Application extends CI_Controller
 							$player['player'] = $this->session->username;
 							$display = $this->parser->parse('_loggedIn', $player, true);
 
-							$this->session->statusMessage = "Login Successful -- Welcome aboard, " . $this->session->username . "!";
+							$this->session->loginMessage = "Login Successful -- Welcome aboard, " . $this->session->username . "!";
 						} else
 						{
 							// invalid password supplied.
-							$this->session->statusMessage = "Invalid Username and Password combination.";
+							$this->session->loginMessage = "Invalid Username and Password combination.";
 						}
 					} else
 					{
 						// Username does not exist.
-						$this->session->statusMessage = "Invalid Username and Password combination.";
+						$this->session->loginMessage = "Invalid Username and Password combination.";
 					}
 				} else
 				{
 					// Either username/password field is blank
-					$this->session->statusMessage = "Missing data in either username or password fields.";
+					$this->session->loginMessage = "Missing data in either username or password fields.";
 				}
 			} elseif (!is_null($this->input->post('register')))
 			{
@@ -276,7 +271,7 @@ class Application extends CI_Controller
 				redirect("/account/register");
 			} else
 			{
-				$this->session->statusMessage = "You are currently viewing this site as a guest.  Login or register to do more awesome things!";
+				$this->session->loginMessage = "You are currently viewing this site as a guest.  Login or register to do more awesome things!";
 			}
 		} else
 		{
@@ -291,7 +286,8 @@ class Application extends CI_Controller
 			} else
 			{
 				// User still logged in.
-				$this->data['statusMessage'] = "Done playing, " . $this->session->username . "?  If so, don't forget to log out.";
+				$this->session->loginMessage = "Done playing, " . $this->session->username . "?  If so, don't forget to log out.";
+
 				$player['player'] = $this->session->username;
 				$display = $this->parser->parse('_loggedIn', $player, true);
 			}
@@ -346,14 +342,14 @@ class Application extends CI_Controller
 		if (!$this->upload->do_upload('avatarUpload'))
 		{
 			return array(
-				'uploaded' => FALSE,
+				'uploaded'		 => FALSE,
 				'display_errors' => $this->upload->display_errors()
 			);
 		} else
 		{
 			return array(
-				'uploaded' => TRUE,
-				'upload_data' => $this->upload->data()
+				'uploaded'		 => TRUE,
+				'upload_data'	 => $this->upload->data()
 			);
 		}
 	}
@@ -405,43 +401,6 @@ class Application extends CI_Controller
 		}
 	}
 
-	function buy()
-	{
-		//get the data from all tables
-		$getAgent = $this->agent->all()[0];
-
-		//calling the columns from the database players column
-		$team = $getAgent->code;
-		$token = $getAgent->auth_token;
-		$player = $this->session->userdata('username'); // current player name
-		
-		$buyInfo = array($team, $token, $player);
-
-		$string = http_build_query($buyInfo);
-
-		//send post request to BCC/buy 
-		$posturl = curl_init($this->serverURL . '/buy');
-		curl_setopt($posturl, CURLOPT_POST, true);
-		curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
-		curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
-
-		$response = curl_exec($posturl);
-		curl_close($posturl);
-
-		$xml = simplexml_load_string($response);
-
-		foreach ($xml->certificate as $certificate)
-		{
-			$timestamp = date(DATE_ATOM, (int) $certificate->datetime);
-			$data = array(
-				'token' => (string) $certificate->token,
-				'piece' => (string) $certificate->piece,
-				'player' => (string) $certificate->player,
-				'datetime' => $timestamp
-			);
-			$this->db->insert('collections', $data); // insert into database
-		}
-	}
 }
 
 /* End of file MY_Controller.php */
