@@ -20,6 +20,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		<div id="playerDetails">
 			<p><label>Name:</label>  <strong>{playerName}</strong></p>
 			<p><label>Peanuts:</label>  <strong>{peanuts}</strong></p>
+			<p><label>Quantity:</label>  <strong>{cards}</strong> cards</p>
+			<p>{buyButton}</p>
 		</div>
 	</div>
 	<div class="content-right">

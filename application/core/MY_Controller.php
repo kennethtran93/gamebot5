@@ -75,7 +75,10 @@ class Application extends CI_Controller {
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
 
+		// Agent Registration to server
 		$this->agentRegister();
+
+		$this->series->getBotSeries($this->serverURL);
 	}
 
 	/**
@@ -194,13 +197,13 @@ class Application extends CI_Controller {
 		}
 
 		$this->data['statusMessage'] = $this->session->loginMessage;
-		
+
 		if (!empty($this->session->userdata('statusMessage')))
 		{
 			$this->data['statusMessage'] = $this->session->statusMessage;
 			$this->session->unset_userdata('statusMessage');
 		}
-		
+
 
 		$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
 
@@ -363,9 +366,11 @@ class Application extends CI_Controller {
 
 		$status = $this->getStatus(false);
 
+		$newRound = false;
 		//check if status is ready or open
 		if ($status['state'] == 2 || $status['state'] == 3)
 		{
+			// State is READY or OPEN
 			$data = array("team" => "a007", "name" => "James_007", "password" => "tuesday");
 
 			$string = http_build_query($data);
@@ -385,6 +390,7 @@ class Application extends CI_Controller {
 			if (!$this->agent->exists((String) $xml->token))
 			{
 				// Token changed.  Update Database accordingly.
+				$newRound = true;
 				// Delete Record / Truncate Table
 				$this->agent->truncate();
 
@@ -393,51 +399,40 @@ class Application extends CI_Controller {
 				$agent->auth_token = (String) $xml->token;
 				$agent->code = $data['team'];
 				$agent->name = $data['name'];
-				unset($agent->last_updated);
+				unset($agent->date_registered);
 				$agent->round_registered = $status['round'];
+				$agent->last_active_round = $status['round'];
 
 				$this->agent->add((array) $agent);
+			} else
+			{
+				// Token exists - check round.
+				$agent = $this->agent->all()[0];
+				if ($agent->last_active_round != $status['round'])
+				{
+					// Different round - update database accordingly
+					$newRound = true;
+					$agent->last_active_round = $status['round'];
+					$this->agent->update($agent);
+				}
 			}
-		}
-	}
-	function buy()
-	{
-		//get the data from all tables
-		$getAgent = $this->agent->all()[0];
-
-		//calling the columns from the database players column
-		$team = $getAgent->code;
-		$token = $getAgent->auth_token;
-		$player = $this->session->userdata('username'); // current player name
-		
-		$buyInfo = array($team, $token, $player);
-
-		$string = http_build_query($buyInfo);
-
-		//send post request to BCC/buy 
-		$posturl = curl_init($this->serverURL . '/buy');
-		curl_setopt($posturl, CURLOPT_POST, true);
-		curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
-		curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
-
-		$response = curl_exec($posturl);
-		curl_close($posturl);
-
-		$xml = simplexml_load_string($response);
-
-		foreach ($xml->certificate as $certificate)
+		} elseif ($status['state'] == 0 || $status['state'] == 1)
 		{
-			$timestamp = date(DATE_ATOM, (int) $certificate->datetime);
-			$data = array(
-				'token' => (string) $certificate->token,
-				'piece' => (string) $certificate->piece,
-				'player' => (string) $certificate->player,
-				'datetime' => $timestamp
-			);
-			$this->db->insert('collections', $data); // insert into database
+			// State is closed or setup.
+			$newRound = true;
+		}
+
+		if ($newRound)
+		{
+			// Truncate all related table
+			$this->transactions->truncate();
+			$this->collections->truncate();
+			$this->players->resetPeanuts();
 		}
 	}
+
 }
 
 /* End of file MY_Controller.php */
-/* Location: application/core/MY_Controller.php */
+	/* Location: application/core/MY_Controller.php */
+	

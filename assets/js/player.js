@@ -33,9 +33,9 @@ $(document).ready(function () {
 			}
 		],
 		order: [
-			[0, 'asc'],
 			[1, 'asc'],
-			[2, 'desc']
+			[2, 'asc'],
+			[3, 'desc']
 		]
 	});
 	$("table#latestActivity").DataTable({

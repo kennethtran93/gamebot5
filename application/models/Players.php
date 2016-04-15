@@ -31,5 +31,9 @@ class Players extends MY_Model {
 			return null;
 		return $query->row();
 	}
+	
+	function resetPeanuts() {
+		$this->db->update($this->_tableName, array('Peanuts' => 100));
+	}
 
 }

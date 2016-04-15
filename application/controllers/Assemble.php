@@ -26,65 +26,73 @@ class Assemble extends Application {
 			$this->data['staticMessageType'] = "staticError";
 		} else
 		{
-			// username set; player logged in
-			// this is the view we want shown 
-			$this->data['pagebody'] = 'assemble';
-
-			// Grab all cards that player owns
-			$playerCollection = $this->collections->some('Player', $player);
-
-			// Check if player actually own any cards first
-			if (!empty($playerCollection))
+			$status = $this->getStatus(false);
+			if ($status['state'] == 3)
 			{
-				// Player owns at least one card
-				// Initialize the dropdown container for assembly page dropdowns
-				$dropdowns = array();
+				// username set; player logged in
+				// this is the view we want shown 
+				$this->data['pagebody'] = 'assemble';
 
-				// Iterate through the object returned from collections
-				foreach ($playerCollection as $row)
+				// Grab all cards that player owns
+				$playerCollection = $this->collections->some('Player', $player);
+
+				// Check if player actually own any cards first
+				if (!empty($playerCollection))
 				{
-					$piece = $row->Piece; // Grab value in Piece column
-					$series = substr($piece, 0, 2); // Extract first two numbers
-					$type = strtoupper(substr($piece, 2, 1)); // Extract the letter after series
-					$part = substr($piece, -1, 1); // Extract the last number for part
-					$opt = "Series " . $series . " Type " . $type;  // For a human-readable selection.
-					switch ($part)
+					// Player owns at least one card
+					// Initialize the dropdown container for assembly page dropdowns
+					$dropdowns = array();
+
+					// Iterate through the object returned from collections
+					foreach ($playerCollection as $row)
 					{
-						case 0:
-							// Top Part Card
-							$dropdowns['top'][] = array(
-								'opt'	 => $opt . " (TOP)",
-								'value'	 => $piece);
-							break;
-						case 1:
-							// Middle Part Card
-							$dropdowns['middle'][] = array(
-								'opt'	 => $opt . " (MIDDLE)",
-								'value'	 => $piece);
-							break;
-						case 2:
-							// Bottom Part Card
-							$dropdowns['bottom'][] = array(
-								'opt'	 => $opt . " (BOTTOM)",
-								'value'	 => $piece);
-							break;
+						$piece = $row->Piece; // Grab value in Piece column
+						$series = substr($piece, 0, 2); // Extract first two numbers
+						$type = strtoupper(substr($piece, 2, 1)); // Extract the letter after series
+						$part = substr($piece, -1, 1); // Extract the last number for part
+						$opt = "Series " . $series . " Type " . $type;  // For a human-readable selection.
+						switch ($part)
+						{
+							case 0:
+								// Top Part Card
+								$dropdowns['top'][] = array(
+									'opt'	 => $opt . " (TOP)",
+									'value'	 => $piece);
+								break;
+							case 1:
+								// Middle Part Card
+								$dropdowns['middle'][] = array(
+									'opt'	 => $opt . " (MIDDLE)",
+									'value'	 => $piece);
+								break;
+							case 2:
+								// Bottom Part Card
+								$dropdowns['bottom'][] = array(
+									'opt'	 => $opt . " (BOTTOM)",
+									'value'	 => $piece);
+								break;
+						}
 					}
+
+					// Prepare for parsing through CI
+					$options = array();
+					$options['top']['options'] = $dropdowns['top'];
+					$options['middle']['options'] = $dropdowns['middle'];
+					$options['bottom']['options'] = $dropdowns['bottom'];
+
+					// Parse the data for each dropdown and return string html result
+					$this->data['topOptions'] = $this->parser->parse('_assembleOption1', $options['top'], true);
+					$this->data['middleOptions'] = $this->parser->parse('_assembleOption1', $options['middle'], true);
+					$this->data['bottomOptions'] = $this->parser->parse('_assembleOption1', $options['bottom'], true);
+				} else
+				{
+					// Player does not own any cards at the moment.  Display message
+					$this->data['staticMessage'] = "You currently don't have any cards in your collection in our system.  Purchase a card pack from your portfolio page first!";
+					$this->data['staticMessageType'] = "staticError";
 				}
-
-				// Prepare for parsing through CI
-				$options = array();
-				$options['top']['options'] = $dropdowns['top'];
-				$options['middle']['options'] = $dropdowns['middle'];
-				$options['bottom']['options'] = $dropdowns['bottom'];
-
-				// Parse the data for each dropdown and return string html result
-				$this->data['topOptions'] = $this->parser->parse('_assembleOption1', $options['top'], true);
-				$this->data['middleOptions'] = $this->parser->parse('_assembleOption1', $options['middle'], true);
-				$this->data['bottomOptions'] = $this->parser->parse('_assembleOption1', $options['bottom'], true);
-			} else
-			{
-				// Player does not own any cards at the moment.  Display message
-				$this->data['staticMessage'] = "You currently don't have any cards in your collection in our system.  Purchase a card pack first!";
+			} else {
+				// Game State not OPEN
+				$this->data['staticMessage'] = "Round state is not open.  Please try again when it's open.";
 				$this->data['staticMessageType'] = "staticError";
 			}
 		}

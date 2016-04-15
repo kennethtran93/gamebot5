@@ -198,6 +198,19 @@ class MY_Model extends CI_Model implements Active_Record {
 		$key = $data[$this->_keyField];
 		return $this->db->insert($this->_tableName, $data);
 	}
+	
+	// Adds a batch of records to DB
+	function add_batch($records) {
+		// convert object to associative array, if needed
+		if (is_object($records))
+		{
+			$data = get_object_vars($records);
+		} else
+		{
+			$data = $records;
+		}
+		return $this->db->insert_batch($this->_tableName, $data);
+	}
 
 	// Retrieve an existing DB record as an object
 	function get($key, $key2 = null)

@@ -231,14 +231,18 @@ class Admin extends Application {
 						break;
 					case 'confirmResetAvatars':
 						$curAvatar = $this->players->get(strtolower($key))->Avatar;
-						unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
+						// If player's avatar is already generic, do nothing.
+						if ($curAvatar != 'generic_photo.png')
+						{
+							unlink($_SERVER['DOCUMENT_ROOT'] . $this->data['appRoot'] . "/assets/images/avatar/" . $curAvatar);
 
-						$updatePlayer = array(
-							'Player'		 => strtolower($key),
-							'Avatar'		 => 'generic_photo.png',
-							'LastUpdated'	 => date('Y-m-d H:i:s')
-						);
-						($this->players->update($updatePlayer) ? $success++ : $failed++);
+							$updatePlayer = array(
+								'Player'		 => strtolower($key),
+								'Avatar'		 => 'generic_photo.png',
+								'LastUpdated'	 => date('Y-m-d H:i:s')
+							);
+							($this->players->update($updatePlayer) ? $success++ : $failed++);
+						}
 						break;
 					case 'confirmPromoteToAdmin':
 						$updatePlayer = array(

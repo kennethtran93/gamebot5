@@ -14,7 +14,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 		<li>Agent Online/Offline Mode</li>
 		<li>Force / Manual Agent Registration</li>
 		<li>Change Agent Code and/or Name</li>
-		<li>Manual Reset of all cards and peanuts</li>
 	</ul>
 
 </div>

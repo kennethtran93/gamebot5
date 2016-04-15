@@ -6,8 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * Data access wrapper for "Series" table.
  *
  */
-class Series extends MY_Model
-{
+class Series extends MY_Model {
 
 	// constructor
 	function __construct()
@@ -15,23 +14,59 @@ class Series extends MY_Model
 		parent::__construct('series', 'series');
 	}
 
-	function getGameData()
+	function getBotSeries($serverURL)
 	{
-		if (($handle = fopen("http://ken-botcards.azurewebsites.net/data/series", "r")) !== FALSE)
+		$response = csv_to_assoc($serverURL . "/data/series");
+		$result = array();
+		foreach ($response as $one)
 		{
-			fgetcsv($handle, ",");
-			while (($data = fgetcsv($handle, ",")) !== FALSE)
+			$record = array();
+			foreach ($one as $key => $value)
 			{
-				print_r($data);
-
-				//update local database from the csv
-				// Token changed.  Update Database accordingly.
-				// Delete Record / Truncate Table
-				$this->series->truncate();
-
-				fclose($handle);
+				if ($key == 'code')
+				{
+					$key = 'series';
+				}
+				$record[ucfirst($key)] = $value;
 			}
+			$result[] = $record;
+		}
+
+		// Get current series known in agent
+		$current = $this->all();
+		$compare = array();
+		foreach ($current as $one)
+		{
+			$compare[] = get_object_vars($one);
+		}
+
+		$different = false;
+		// Check if equal records
+		if (count($result) == count($compare))
+		{
+
+			for ($x = 0; $x < count($result); $x++)
+			{
+				$check = !empty(array_diff_assoc($result[$x], $compare[$x]));
+				if ($check)
+				{
+					$different = true;
+					break;
+				}
+			}
+		} else
+		{
+			$different = true;
+		}
+
+		if ($different)
+		{
+			// Delete all records from series
+			$this->truncate();
+
+			// Add records from server
+			$this->add_batch($result);
 		}
 	}
+
 }
-	
