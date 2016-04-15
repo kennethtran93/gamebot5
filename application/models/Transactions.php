@@ -11,7 +11,7 @@ class Transactions extends MY_Model2 {
 	// constructor
 	function __construct()
 	{
-		parent::__construct('transactions', 'datetime', 'player');
+		parent::__construct('transactions', 'DateTime', 'Player');
 	}
 
 }

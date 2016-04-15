@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-14 21:15 - Fixed Buy Implementation, including checks.  Buy Button now on portfolio page, and only on your own portfolio page.  Added truncating tables options for local db if new round.  Assemble page updated to for state and no card messages.  Added new card slices from server.
 * 2016-04-14 11:33 - Done implementing the buy function
 * 2016-04-04 11:15 - Added Admin Promote/Demote to Player management.  Optimized back-end code of Admin Controller.  Status messages after actions of player management fixed.
 * 2016-04-13 18:00 - Optimized Agent Registration (and added sql to generate the agent db table), Game status now shows on all pages, formatting for static messages, fix for Admin Delete Accounts

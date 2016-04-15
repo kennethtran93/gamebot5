@@ -26,6 +26,12 @@ class Player extends Application {
 			{
 				// Username exists; user logged in
 				$name = $this->session->username;
+
+				// Did user hit buy button?
+				if (!is_null($this->input->post('buyCardPack')))
+				{
+					$this->buy();
+				}
 			}
 		} else
 		{
@@ -63,6 +69,14 @@ class Player extends Application {
 			$this->data['players'] = $this->parser->parse('_playerSelect1', $this->getPlayers(), true);
 			$this->data['avatar'] = $this->getAvatar($name);
 			$this->data['peanuts'] = $this->getPeanuts($name);
+			$this->data['cards'] = $this->getCardCount($name);
+			$this->data['buyButton'] = "";
+
+			if ($this->session->username == $name)
+			{
+				// Only provide the buy button if they are viewing their own portfolio
+				$this->data['buyButton'] = $this->parser->parse('_buyButton', array(), true);
+			}
 			$this->data['playerCards'] = $this->parser->parse('_playerCard1', $this->getPlayerCollection($name), true);
 			$this->data['playerLatestActivity'] = $this->parser->parse('_transactions', $this->getLatestActivity($name), true);
 		}
@@ -143,6 +157,20 @@ class Player extends Application {
 		}
 	}
 
+	function getCardCount($name = null)
+	{
+		// Check if username is provided, and if they exist in the db
+		if (is_null($name) || $name == "" || !$this->players->exists($name))
+		{
+			// Unregistered user
+			return "0";
+		} else
+		{
+			// Name is given and exists, grab that player's card count
+			return count($this->collections->some('Player', $name));
+		}
+	}
+
 	// Get all player cards
 	function getPlayerCollection($name = null)
 	{
@@ -217,7 +245,7 @@ class Player extends Application {
 				switch ($type->Trans)
 				{
 					case "buy":
-						$row['Peanuts'] = "(-10)";
+						$row['Peanuts'] = "(-20)";
 						$row['Action'] = "Purchased a card pack.";
 						break;
 					case "sell":
@@ -261,6 +289,91 @@ class Player extends Application {
 			$result['transactions'] = $history;
 
 			return $result;
+		}
+	}
+
+	function buy()
+	{
+		$status = $this->getStatus(false);
+
+		//check if status is ready or open
+		if ($status['state'] == 3)
+		{
+			// Get Player
+			$player = $this->players->get($this->session->userdata('username'));
+
+			// Check peanut count first
+			if ($player->Peanuts >= 20)
+			{
+				// Enough Peanuts for a card pack
+				// 
+				//get the data from all tables
+				$getAgent = $this->agent->all()[0];
+
+				//calling the columns from the database players column
+				$team = $getAgent->code;
+				$token = $getAgent->auth_token;
+				$name = $player->Player;
+
+				$buyInfo = array(
+					'team'	 => $team,
+					'token'	 => $token,
+					'player' => $name);
+
+				$string = http_build_query($buyInfo);
+
+				//send post request to BCC/buy 
+				$posturl = curl_init($this->serverURL . '/buy');
+				curl_setopt($posturl, CURLOPT_POST, true);
+				curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
+				curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
+
+				$response = curl_exec($posturl);
+				curl_close($posturl);
+
+				$xml = simplexml_load_string($response);
+
+				$cards = array();
+				foreach ($xml->cardpack->certificate as $certificate)
+				{
+					$timestamp = date('Y-m-d H:i:s', (int) $certificate->datetime);
+					$record = array(
+						'token'		 => (string) $certificate->token,
+						'piece'		 => (string) $certificate->piece,
+						'player'	 => (string) $certificate->player,
+						'datetime'	 => $timestamp
+					);
+					$cards[] = $record;
+				}
+
+				$this->collections->add_batch($cards); // Insert batch of cards into db
+
+				$transactions = array(
+					'DateTime'	 => date('Y-m-d H:i:s'),
+					'Player'	 => $name,
+					'Series'	 => NULL,
+					'Trans'		 => 'buy'
+				);
+
+				$this->transactions->add($transactions); // Add Transaction Record
+
+				$updatePlayer = array(
+					'Player'	 => $name,
+					'Peanuts'	 => $xml->billTo->remaining
+				);
+
+				$this->players->update($updatePlayer);
+
+				$this->session->statusMessage = "Successfully exchanged 20 peanuts for a card pack.  Your balance remaining has been updated!";
+			} else
+			{
+				// Peanut Count less than 20 - can't purchase card stack
+				$this->session->statusMessage = "Not Enough Peanuts to purchase card pack!";
+			}
+		} else
+		{
+			// Game State NOT OPEN
+			$this->session->statusMessage = "Cannot purchase items at this time.  Please try again when the round state is OPEN!";
 		}
 	}
 
