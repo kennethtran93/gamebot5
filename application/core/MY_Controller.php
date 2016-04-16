@@ -453,7 +453,7 @@ class Application extends CI_Controller {
 			{
 				if (!$live)
 				{
-					// Test passwordf failed - only called from agent maintence page.
+					// Test password failed - only called from agent maintence page.
 					return FALSE;
 				}
 				// Whoops, wrong password specified

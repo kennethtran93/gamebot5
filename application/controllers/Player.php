@@ -336,12 +336,6 @@ class Player extends Application {
 					if (!empty($xml->message))
 					{
 						// Oh my, despite the careful checks, something went past it and the server returned a booboo.
-						if (!$live)
-						{
-							// Test passwordf failed - only called from agent maintence page.
-							return FALSE;
-						}
-						// Whoops, wrong password specified
 						$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
 						$this->data['staticMessageType'] = "staticError";
 						// Stop processing the page.
