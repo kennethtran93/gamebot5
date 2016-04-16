@@ -104,7 +104,10 @@ label {
 	color: white;
 }
 
-#registration label, #accountInfo label, .dataTables_filter label {
+#registration label,
+#accountInfo label,
+.dataTables_filter label,
+#agent_admin label {
 	color: black;
 }
 

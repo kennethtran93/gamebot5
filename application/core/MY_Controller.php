@@ -75,10 +75,12 @@ class Application extends CI_Controller {
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
 
-		// Agent Registration to server
-		$this->agentRegister();
-
-		$this->series->getBotSeries($this->serverURL);
+		// Agent Registration to server, if agent is online
+		if ($this->agent->get('agent_online')->value)
+		{
+			$this->agentRegister();
+			$this->series->getBotSeries($this->serverURL);
+		}
 	}
 
 	/**
@@ -204,8 +206,13 @@ class Application extends CI_Controller {
 			$this->session->unset_userdata('statusMessage');
 		}
 
-
-		$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
+		if ($this->agent->get('agent_online')->value)
+		{
+			$this->data['gameStatus'] = $this->parser->parse('_gameStatus', $this->getStatus(), TRUE);
+		} else
+		{
+			$this->data['gameStatus'] = $this->parser->parse('_gameStatus_offline', array(), TRUE);
+		}
 
 		$this->data['content'] = $this->parser->parse($this->data['pagebody'], $this->data, true);
 		// finally, build the browser page!
@@ -222,8 +229,6 @@ class Application extends CI_Controller {
 		$display = $this->load->view('_loginForm', '', true);
 		if (is_null($this->session->username))
 		{
-			// Insert the page user tried to access recently into session.
-			$this->session->pageurl = urlencode($_SERVER['REQUEST_URI']);
 
 			// No username set in session
 			if (!is_null($this->input->post('login')))
@@ -304,27 +309,78 @@ class Application extends CI_Controller {
 	 * Gets the status of the botcards server
 	 */
 
-	function getStatus()
+	function getStatus($updated = false, $testURL = "")
 	{
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->serverURL . "/status");
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$result = curl_exec($ch);
-		curl_close($ch);
-
-		$xml = simplexml_load_string($result);
-		// Convert object to array
-		$status = get_object_vars($xml);
-		// Just grammatical stuff
-		if ($status['countdown'] == 1)
+		if (!$updated)
 		{
-			$status['s'] = "";
+			if ($this->agent->get('agent_online')->value)
+			{
+				$ch = curl_init();
+				curl_setopt($ch, CURLOPT_URL, $this->serverURL . "/status");
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+				$result = curl_exec($ch);
+				curl_close($ch);
+
+				$xml = simplexml_load_string($result);
+				// Convert object to array
+				$status = get_object_vars($xml);
+				// Just grammatical stuff
+				if ($status['countdown'] == 1)
+				{
+					$status['s'] = "";
+				} else
+				{
+					$status['s'] = "s";
+				}
+				return $status;
+			}
 		} else
 		{
-			$status['s'] = "s";
+			// Try connecting to updated server URL to get its status
+			try
+			{
+				$ch = curl_init();
+				$curl_options = array(
+					CURLOPT_URL				 => $testURL . "/status",
+					CURLOPT_CONNECTTIMEOUT	 => 10,
+					CURLOPT_HEADER			 => TRUE,
+					CURLOPT_NOBODY			 => TRUE,
+					CURLOPT_RETURNTRANSFER	 => TRUE,
+					CURLOPT_TIMEOUT			 => 15
+				);
+				curl_setopt_array($ch, $curl_options);
+
+				$response = curl_exec($ch);
+				$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+				curl_close($ch);
+				if ($httpcode >= 200 && $httpcode < 400 && $response)
+				{
+					libxml_use_internal_errors(true);
+					$xml = simplexml_load_string($response);
+					if ($xml !== FALSE)
+					{
+						if (!empty($xml->round) &&
+								!is_null($xml->state) &&
+								!empty($xml->countdown) &&
+								!empty($xml->current) &&
+								!empty($xml->duration) &&
+								!empty($xml->upcoming) &&
+								!empty($xml->alarm) &&
+								!empty($xml->now))
+						{
+							return TRUE;
+						}
+					}
+				}
+
+				return FALSE;
+			} catch (Exception $ex)
+			{
+				return FALSE;
+			}
 		}
 
-		return $status;
+		return null;
 	}
 
 	/*
@@ -361,7 +417,7 @@ class Application extends CI_Controller {
 	 *  function for agent registration
 	 */
 
-	function agentRegister()
+	function agentRegister($live = true, $testPassword = '')
 	{
 
 		$status = $this->getStatus(false);
@@ -371,8 +427,15 @@ class Application extends CI_Controller {
 		if ($status['state'] == 2 || $status['state'] == 3)
 		{
 			// State is READY or OPEN
-			$data = array("team" => "a007", "name" => "James_007", "password" => "tuesday");
+			$data = array(
+				"team"		 => $this->agent->get('code')->value,
+				"name"		 => $this->agent->get('name')->value,
+				"password"	 => $this->agent->get('server_password')->value);
 
+			if (!$live && !empty($testPassword)) {
+				// Testing password
+				$data['password'] = $testPassword;
+			}
 			$string = http_build_query($data);
 
 			//send post request to BCC/register 
@@ -386,40 +449,65 @@ class Application extends CI_Controller {
 
 			$xml = simplexml_load_string($response);
 
-			//check if agent exists in the record
-			if (!$this->agent->exists((String) $xml->token))
+			if (!empty($xml->message))
 			{
-				// Token changed.  Update Database accordingly.
-				$newRound = true;
-				// Delete Record / Truncate Table
-				$this->agent->truncate();
-
-				//add agent to database
-				$agent = $this->agent->create();
-				$agent->auth_token = (String) $xml->token;
-				$agent->code = $data['team'];
-				$agent->name = $data['name'];
-				unset($agent->date_registered);
-				$agent->round_registered = $status['round'];
-				$agent->last_active_round = $status['round'];
-
-				$this->agent->add((array) $agent);
-			} else
-			{
-				// Token exists - check round.
-				$agent = $this->agent->all()[0];
-				if ($agent->last_active_round != $status['round'])
+				if (!$live)
 				{
-					// Different round - update database accordingly
+					// Test passwordf failed - only called from agent maintence page.
+					return FALSE;
+				}
+				// Whoops, wrong password specified
+				$this->data['staticMessage'] = $xml->message;
+				$this->data['staticMessageType'] = "staticError";
+				// Stop processing the page.
+				$this->render();
+			}
+			if (!empty($xml->token))
+			{
+				if (!$live)
+				{
+					// Test password succeeded.
+					// Technically it registered with the server even if we set the agent to online
+					return TRUE;
+				}
+				//check if agent exists in the record
+				if ($this->agent->get('auth_token')->value != (String) $xml->token)
+				{
+					// Token changed.  Update Database accordingly.
 					$newRound = true;
-					$agent->last_active_round = $status['round'];
-					$this->agent->update($agent);
+
+					$update = array(
+						'auth_token'		 => (String) $xml->token,
+						'date_registered'	 => date('Y-m-d H:i:s'),
+						'round_registered'	 => $status['round'],
+						'last_active_round'	 => $status['round']
+					);
+
+					$this->agent->update($update);
+				} else
+				{
+					// Token exists - check round.
+					if ($this->agent->get('last_active_round')->value != $status['round'])
+					{
+						// Different round - update database accordingly
+						$newRound = true;
+						$this->agent->update('last_active_round', $status['round']);
+					}
 				}
 			}
 		} elseif ($status['state'] == 0 || $status['state'] == 1)
 		{
 			// State is closed or setup.
 			$newRound = true;
+			if (!$live) {
+				// Invalid state - can't test password
+				return NULL;
+			}
+		}
+		
+		if (!$live) {
+			// Invalid state - can't test password
+			return NULL;
 		}
 
 		if ($newRound)

@@ -296,84 +296,87 @@ class Player extends Application {
 	{
 		$status = $this->getStatus(false);
 
-		//check if status is ready or open
-		if ($status['state'] == 3)
-		{
-			// Get Player
-			$player = $this->players->get($this->session->userdata('username'));
-
-			// Check peanut count first
-			if ($player->Peanuts >= 20)
+		// Check agent status
+		if ($this->agent->get('agent_online')->value) {
+			
+			//check if status is open
+			if ($status['state'] == 3)
 			{
-				// Enough Peanuts for a card pack
-				// 
-				//get the data from all tables
-				$getAgent = $this->agent->all()[0];
+				// Get Player
+				$player = $this->players->get($this->session->userdata('username'));
 
-				//calling the columns from the database players column
-				$team = $getAgent->code;
-				$token = $getAgent->auth_token;
-				$name = $player->Player;
-
-				$buyInfo = array(
-					'team'	 => $team,
-					'token'	 => $token,
-					'player' => $name);
-
-				$string = http_build_query($buyInfo);
-
-				//send post request to BCC/buy 
-				$posturl = curl_init($this->serverURL . '/buy');
-				curl_setopt($posturl, CURLOPT_POST, true);
-				curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
-				curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
-
-				$response = curl_exec($posturl);
-				curl_close($posturl);
-
-				$xml = simplexml_load_string($response);
-
-				$cards = array();
-				foreach ($xml->cardpack->certificate as $certificate)
+				// Check peanut count first
+				if ($player->Peanuts >= 20)
 				{
-					$timestamp = date('Y-m-d H:i:s', (int) $certificate->datetime);
-					$record = array(
-						'token'		 => (string) $certificate->token,
-						'piece'		 => (string) $certificate->piece,
-						'player'	 => (string) $certificate->player,
-						'datetime'	 => $timestamp
+					// Enough Peanuts for a card pack
+					//calling the columns from the database players column
+					$team = $this->agent->get('code')->value;
+					$token = $this->agent->get('auth_token')->value;
+					$name = $player->Player;
+
+					$buyInfo = array(
+						'team'	 => $team,
+						'token'	 => $token,
+						'player' => $name);
+
+					$string = http_build_query($buyInfo);
+
+					//send post request to BCC/buy 
+					$posturl = curl_init($this->serverURL . '/buy');
+					curl_setopt($posturl, CURLOPT_POST, true);
+					curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
+					curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
+
+					$response = curl_exec($posturl);
+					curl_close($posturl);
+
+					$xml = simplexml_load_string($response);
+
+					$cards = array();
+					foreach ($xml->certificate as $certificate)
+					{
+						$timestamp = date('Y-m-d H:i:s', (int) $certificate->datetime);
+						$record = array(
+							'token'		 => (string) $certificate->token,
+							'piece'		 => (string) $certificate->piece,
+							'player'	 => (string) $certificate->player,
+							'datetime'	 => $timestamp
+						);
+						$cards[] = $record;
+					}
+
+					$this->collections->add_batch($cards); // Insert batch of cards into db
+
+					$transactions = array(
+						'DateTime'	 => date('Y-m-d H:i:s'),
+						'Player'	 => $name,
+						'Series'	 => NULL,
+						'Trans'		 => 'buy'
 					);
-					$cards[] = $record;
+
+					$this->transactions->add($transactions); // Add Transaction Record
+
+					$updatePlayer = array(
+						'Player'	 => $name,
+						'Peanuts'	 => $xml['balance']
+					);
+
+					$this->players->update($updatePlayer);
+
+					$this->session->statusMessage = "Successfully exchanged 20 peanuts for a card pack.  Your balance remaining has been updated!";
+				} else
+				{
+					// Peanut Count less than 20 - can't purchase card stack
+					$this->session->statusMessage = "Not Enough Peanuts to purchase card pack!";
 				}
-
-				$this->collections->add_batch($cards); // Insert batch of cards into db
-
-				$transactions = array(
-					'DateTime'	 => date('Y-m-d H:i:s'),
-					'Player'	 => $name,
-					'Series'	 => NULL,
-					'Trans'		 => 'buy'
-				);
-
-				$this->transactions->add($transactions); // Add Transaction Record
-
-				$updatePlayer = array(
-					'Player'	 => $name,
-					'Peanuts'	 => $xml->billTo->remaining
-				);
-
-				$this->players->update($updatePlayer);
-
-				$this->session->statusMessage = "Successfully exchanged 20 peanuts for a card pack.  Your balance remaining has been updated!";
 			} else
 			{
-				// Peanut Count less than 20 - can't purchase card stack
-				$this->session->statusMessage = "Not Enough Peanuts to purchase card pack!";
+				// Game State NOT OPEN
+				$this->session->statusMessage = "Cannot purchase items at this time.  Please try again when the round state is OPEN!";
 			}
-		} else
-		{
-			// Game State NOT OPEN
-			$this->session->statusMessage = "Cannot purchase items at this time.  Please try again when the round state is OPEN!";
+		} else {
+			// Agent is offline.
+			$this->session->statusMessage = "This agent is currently offline.  You can't purchase anything right now.";
 		}
 	}
 
