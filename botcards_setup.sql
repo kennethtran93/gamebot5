@@ -38,14 +38,14 @@ CREATE TABLE IF NOT EXISTS `agent` (
 
 INSERT INTO `agent` VALUES
 ('auth_token', ''),
-('code', 'a999'),
+('code', 'a05'),
 ('name', 'CodingForDonuts'),
 ('date_registered', ''),
 ('round_registered', ''),
 ('last_active_round', ''),
 ('server_URL', 'http://ken-botcards.azurewebsites.net'),
 ('server_password', 'tuesday'),
-('agent_online', FALSE);
+('agent_online', TRUE);
 
 --
 -- Table structure for table `players`
