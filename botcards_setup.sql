@@ -30,15 +30,22 @@ CREATE TABLE IF NOT EXISTS `ci_sessions` (
 --
 DROP TABLE IF EXISTS `agent`;
 CREATE TABLE IF NOT EXISTS `agent` (
-	`auth_token`		VARCHAR(100)								NOT NULL,
-	`code`				VARCHAR(5)									NOT NULL,
-	`name`				VARCHAR(100)								NOT NULL,
-	`date_registered`	DATETIME		DEFAULT CURRENT_TIMESTAMP	NOT NULL,
-	`round_registered`	INT(10)										NOT NULL,
-	`last_active_round`	INT(10)										NOT NULL,
+	`property`		VARCHAR(100)	NOT NULL,
+	`value`			VARCHAR(255)	NOT NULL,
 	CONSTRAINT `agent_pk`
-		PRIMARY KEY(`auth_token`)
+		PRIMARY KEY (`property`)
 );
+
+INSERT INTO `agent` VALUES
+('auth_token', ''),
+('code', 'a999'),
+('name', 'CodingForDonuts'),
+('date_registered', ''),
+('round_registered', ''),
+('last_active_round', ''),
+('server_URL', 'http://ken-botcards.azurewebsites.net'),
+('server_password', 'tuesday'),
+('agent_online', FALSE);
 
 --
 -- Table structure for table `players`

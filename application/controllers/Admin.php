@@ -41,6 +41,199 @@ class Admin extends Application {
 				switch ($page)
 				{
 					case 'agent':
+						$this->data['serverURLError'] = "";
+						$this->data['serverPasswordError'] = "";
+						$this->data['agentCodeError'] = "";
+						$this->data['agentNameError'] = "";
+						if (!is_null($this->input->post('toggleAgentStatus')))
+						{
+							// Toggle Agent Status
+							if ($this->agent->get('agent_online')->value)
+							{
+								// Agent currently online.  Bring offline
+
+								$this->agent->clear(array('auth_token', 'date_registered', 'round_registered', 'last_active_round'));
+								$this->agent->update('agent_online', FALSE);
+
+								// Truncate all related table
+								$this->transactions->truncate();
+								$this->collections->truncate();
+								$this->players->resetPeanuts();
+
+								$this->session->statusMessage = "This agent is now offline.  All outgoing connections to the server will not run.  Any existing game records have been removed.";
+							} else
+							{
+								$this->agent->update('agent_online', TRUE);
+								// Agent currently offline.  Bring online
+								$this->agentRegister();
+
+								$this->session->statusMessage = "This agent is now online, and will be able to participate in the next game round.";
+							}
+							// prevent cache refreshing from toggling offline/online status
+							redirect('/admin/agent');
+						} elseif (!is_null($this->input->post('changeServerProperties')))
+						{
+							// Change Server Properties button clicked
+							$testURL = trim($this->input->post('serverURL'));
+							$updatedURL = $this->agent->get('server_URL')->value != $testURL;
+							$validURL = true;
+							if ($updatedURL && !empty($testURL))
+							{
+								$validURL = false;
+								// Updated url provided
+								if (filter_var($testURL, FILTER_VALIDATE_URL))
+								{
+									// PHP deemed it's a valid url
+									if ($this->getStatus(TRUE, $testURL))
+									{
+										// At this point the new URL appears to have met the reqirements of a Botcards server.
+										// Update Server variables
+										$this->agent->update('server_URL', $testURL);
+										$validURL = true;
+
+										$this->session->statusMessage = "Botcards Server Properties Updated.";
+									} else
+									{
+										$this->data['serverURLError'] = "Update Failed - This is not a Botcard server URL ( " . $testURL . " ).";
+										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+									}
+								} else
+								{
+									$this->data['serverURLError'] = "Update Failed - Invalid URL specified ( " . $testURL . " ).";
+									$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+								}
+							} else
+							{
+								if (empty($this->input->post('serverURL')))
+								{
+									$this->data['serverURLError'] = "Update Failed - This field cannot be empty!";
+									$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+								}
+							}
+
+							if ($validURL)
+							{
+								$updatedPW = $this->agent->get('server_password')->value != $this->input->post('serverPassword');
+								if ($updatedPW && !empty($this->input->post('serverPassword')))
+								{
+									// Updated Password provided
+									$testPW = $this->agentRegister(false, $this->input->post('serverPassword'));
+									if ($testPW === TRUE)
+									{
+										// Password valid on server side.
+										$this->agent->update('server_password', $this->input->post('serverPassword'));
+
+										$this->session->statusMessage = "Botcards Server Properties Updated.";
+									} elseif ($testPW === FALSE)
+									{
+										// Invalid Password
+										$this->data['serverPasswordError'] = "Update Failed - Server did not accept the password ( " . $this->input->post('serverPassword') . " ).";
+										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+									} else
+									{
+										// Can't check password at the moment - invalid state.
+										$this->data['serverPasswordError'] = "Update Failed - Server is not ready for us to check password of ( " . $this->input->post('serverPassword') . " ).";
+										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+									}
+								} else
+								{
+									if (empty($this->input->post('serverPassword')))
+									{
+										$this->data['serverPasswordError'] = "Update Failed - This field cannot be empty!";
+										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+									}
+								}
+							} else
+							{
+								$this->data['serverPasswordError'] = "Cannot validate password ( " . $this->input->post('serverPassword') . " as Server URL is invalid.";
+								$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
+							}
+
+							if (!$updatedURL && !$updatedPW)
+							{
+								$this->session->statusMessage = "Nothing to update for the Botcards Server Properties.";
+								// prevent rechecking the same data posted.
+								redirect("/admin/agent");
+							}
+						} elseif (!is_null($this->input->post('changeAgentProperties')))
+						{
+							// Change Agent Properties clicked
+
+							$updatedCode = $this->agent->get('code')->value != $this->input->post('agentCode');
+							if ($updatedCode && !empty($this->input->post('agentCode')))
+							{
+								if (preg_match('/^([AaBb]\d{1,3})$/', $this->input->post('agentCode')))
+								{
+									// Updated Code provided
+									$this->agent->update('code', strtolower(trim($this->input->post('agentCode'))));
+									$this->session->statusMessage = "Agent Properties Updated.";
+								} else
+								{
+									// Invalid code entered
+									$this->data['agentCodeError'] = "Update Failed - Invalid Agent Code.  Code starts with either a or b, followed by one to three numbers.";
+									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
+								}
+							} else
+							{
+								if (empty($this->input->post('agentCode')))
+								{
+									$this->data['agentCodeError'] = "Update Failed - This field cannot be empty!";
+									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
+								}
+							}
+
+							$updatedName = $this->agent->get('name')->value != $this->input->post('agentName');
+							if ($updatedName && !empty($this->input->post('agentName')))
+							{
+								// Updated Code provided
+								$this->agent->update('name', trim($this->input->post('agentName')));
+								$this->session->statusMessage = "Agent Properties Updated.";
+							} else
+							{
+								if (empty($this->input->post('agentName')))
+								{
+									$this->data['agentNameError'] = "Update Failed - This field cannot be empty!";
+									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
+								}
+							}
+
+							if (!$updatedCode && !$updatedName)
+							{
+								$this->session->statusMessage = "Nothing to update for the Agent Properties.";
+								// prevent rechecking the same data posted.
+								redirect("/admin/agent");
+							}
+						} elseif (!is_null($this->input->post('forceAgentRegistration')))
+						{
+							// Force Agent Registerion (when it's online only)
+							if ($this->agent->get('agent_online')->value)
+							{
+								$this->agentRegister();
+								$this->session->statusMessage = "Force / Manual Agent Registration performed.";
+							} else
+							{
+								$this->session->statusMessage = "You can't force / manually perform agent registration while the agent is offline!";
+							}
+						}
+
+						// Get Latest Properties
+						$agent = $this->agent->all();
+
+						// display updated status
+						if ($agent['agent_online'])
+						{
+							$this->data['agentStatus'] = 'Online';
+						} else
+						{
+							$this->data['agentStatus'] = 'OFFLINE';
+						}
+
+						$this->data['serverURL'] = $agent['server_URL'];
+						$this->data['serverPassword'] = $agent['server_password'];
+
+						$this->data['agentCode'] = $agent['code'];
+						$this->data['agentName'] = $agent['name'];
+
 						$this->data['pagebody'] = 'admin_agent';
 						break;
 					case 'player':

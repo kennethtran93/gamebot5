@@ -18,21 +18,21 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 			<tr>
 				<td><label for="regUsername">Username:</label></td>
 				<td>
-					<input type="text" name="regUsername" id="regUsername" class="textbox" maxlength="25" value="{regUsername}"/>
+					<input type="text" name="regUsername" id="regUsername" class="textbox" maxlength="25" value="{regUsername}" placeholder="Username"/>
 				</td>
 				<td><span class="error">{regUsernameError}</td>
 			</tr>
 			<tr>
 				<td><label for="regPassword">Password:</label></td>
 				<td>
-					<input type="password" name="regPassword" id="regPassword" class="textbox" value=""/>
+					<input type="password" name="regPassword" id="regPassword" class="textbox" value="" placeholder="Password"/>
 				</td>
 				<td><span class="error">{regPasswordError}</td>
 			</tr>
 			<tr>
 				<td><label for="regConfirmPassword">Confirm Password:</label></td>
 				<td>
-					<input type="password" name="regConfirmPassword" id="regConfirmPassword" class="textbox" value=""/>
+					<input type="password" name="regConfirmPassword" id="regConfirmPassword" class="textbox" value="" placeholder="Confirm Password"/>
 				</td>
 				<td><span class="error">{regPasswordError}</td>
 			</tr>
