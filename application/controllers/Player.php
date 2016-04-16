@@ -297,8 +297,9 @@ class Player extends Application {
 		$status = $this->getStatus(false);
 
 		// Check agent status
-		if ($this->agent->get('agent_online')->value) {
-			
+		if ($this->agent->get('agent_online')->value)
+		{
+
 			//check if status is open
 			if ($status['state'] == 3)
 			{
@@ -331,6 +332,21 @@ class Player extends Application {
 					curl_close($posturl);
 
 					$xml = simplexml_load_string($response);
+
+					if (!empty($xml->message))
+					{
+						// Oh my, despite the careful checks, something went past it and the server returned a booboo.
+						if (!$live)
+						{
+							// Test passwordf failed - only called from agent maintence page.
+							return FALSE;
+						}
+						// Whoops, wrong password specified
+						$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
+						$this->data['staticMessageType'] = "staticError";
+						// Stop processing the page.
+						$this->render();
+					}
 
 					$cards = array();
 					foreach ($xml->certificate as $certificate)
@@ -374,7 +390,8 @@ class Player extends Application {
 				// Game State NOT OPEN
 				$this->session->statusMessage = "Cannot purchase items at this time.  Please try again when the round state is OPEN!";
 			}
-		} else {
+		} else
+		{
 			// Agent is offline.
 			$this->session->statusMessage = "This agent is currently offline.  You can't purchase anything right now.";
 		}

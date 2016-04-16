@@ -457,7 +457,7 @@ class Application extends CI_Controller {
 					return FALSE;
 				}
 				// Whoops, wrong password specified
-				$this->data['staticMessage'] = $xml->message;
+				$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
 				$this->data['staticMessageType'] = "staticError";
 				// Stop processing the page.
 				$this->render();
