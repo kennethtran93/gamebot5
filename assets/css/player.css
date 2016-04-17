@@ -13,6 +13,11 @@ div.contentleft {
 	float: left;
 }
 
+#player_cards > h3,
+#latest_activity > h3 {
+	padding-left: 1em;
+}
+
 #avatar {
 	width: 187px;
 	height: 216.5px;

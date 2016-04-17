@@ -249,28 +249,14 @@ class Player extends Application {
 						$row['Action'] = "Purchased a card pack.";
 						break;
 					case "sell":
-						switch ($type->Series)
+						if (!is_null($type->Series))
 						{
-							case 11:
-								$row['Peanuts'] = "+20";
-								$row['Action'] = "Sold an assembled bot (matched Series 11).";
-								break;
-							case 13:
-								$row['Peanuts'] = "+50";
-								$row['Action'] = "Sold an assembled bot (matched Series 13).";
-								break;
-							case 26:
-								$row['Peanuts'] = "+200";
-								$row['Action'] = "Sold an assembled bot (matched Series 26).";
-								break;
-							case 5:
-								$row['Peanuts'] = "+5";
-								$row['Action'] = "Sold an assembled bot (mismatched pieces).";
-								break;
-							default:
-								$row['Peanuts'] = "+1";
-								$row['Action'] = "Sold a single card.";
-								break;
+							$row['Peanuts'] = "+" . $this->series->get($type->Series)->Value;
+							$row['Action'] = "Sold an assembled bot (a completed set of Bot Series " . $type->Series . ").";
+						} else
+						{
+							$row['Peanuts'] = "+5";
+							$row['Action'] = "Sold an assembled bot (mismatched pieces).";
 						}
 						break;
 					default:
@@ -372,8 +358,9 @@ class Player extends Application {
 						$this->transactions->add($transactions); // Add Transaction Record
 
 						$updatePlayer = array(
-							'Player'	 => $name,
-							'Peanuts'	 => $xml['balance']
+							'Player'			 => $name,
+							'Peanuts'			 => $xml['balance'],
+							'last_active_round'	 => $status['round']
 						);
 
 						$this->players->update($updatePlayer);
