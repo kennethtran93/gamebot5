@@ -41,10 +41,16 @@ class Admin extends Application {
 				switch ($page)
 				{
 					case 'agent':
-						$this->data['serverURLError'] = "";
-						$this->data['serverPasswordError'] = "";
-						$this->data['agentCodeError'] = "";
-						$this->data['agentNameError'] = "";
+						$this->data['serverURLFeedback'] = "";
+						$this->data['serverURLFeedbackType'] = "";
+						$this->data['serverPasswordFeedback'] = "";
+						$this->data['serverPasswordFeedbackType'] = "";
+						$this->data['agentCodeFeedback'] = "";
+						$this->data['agentCodeFeedbackType'] = "";
+						$this->data['agentNameFeedback'] = "";
+						$this->data['agentNameFeedbackType'] = "";
+						$this->data['toggleAgentFeedback'] = "";
+						$this->data['toggleAgentFeedbackType'] = "";
 						if (!is_null($this->input->post('toggleAgentStatus')))
 						{
 							// Toggle Agent Status
@@ -60,17 +66,40 @@ class Admin extends Application {
 								$this->collections->truncate();
 								$this->players->resetPeanuts();
 
+								$this->data['toggleAgentFeedback'] = " --- Successfully changed the state of the agent.";
+								$this->data['toggleAgentFeedbackType'] = "success";
 								$this->session->statusMessage = "This agent is now offline.  All outgoing connections to the server will not run.  Any existing game records have been removed.";
 							} else
 							{
-								$this->agent->update('agent_online', TRUE);
 								// Agent currently offline.  Bring online
-								$this->agentRegister();
+								// But first...validate password!
+								$testPW = $this->agentRegister(false);
+								if ($testPW === TRUE)
+								{
+									$this->agent->update('agent_online', TRUE);
+									$this->agentRegister();
 
-								$this->session->statusMessage = "This agent is now online, and will be able to participate in the next game round.";
+									$this->data['toggleAgentFeedback'] = " --- Successfully changed the state of the agent.";
+									$this->data['toggleAgentFeedbackType'] = "success";
+									$this->session->statusMessage = "This agent is now online, and has been re-registered with the server.";
+								} elseif ($testPW === FALSE)
+								{
+									$this->data['toggleAgentFeedback'] = " --- Could not bring agent online.  See additional error notes below.";
+									$this->data['toggleAgentFeedbackType'] = "error";
+									$this->data['serverPasswordFeedback'] = "Existing password for the URL above is invalid.";
+									$this->data['serverPasswordFeedbackType'] = "error";
+
+									$this->session->statusMessage = "Could not bring agent online.  See error notes below.";
+								} else
+								{
+									// Can't check password at the moment - invalid state.
+									$this->data['toggleAgentFeedback'] = " --- Could not bring agent online.  See additional error notes below.";
+									$this->data['toggleAgentFeedbackType'] = "error";
+									$this->data['serverPasswordFeedback'] = "Server is not ready for us to validate existing password.";
+									$this->data['serverPasswordFeedbackType'] = "error";
+									$this->session->statusMessage = "Cannot bring this agent online.  See error notes below.";
+								}
 							}
-							// prevent cache refreshing from toggling offline/online status
-							redirect('/admin/agent');
 						} elseif (!is_null($this->input->post('changeServerProperties')))
 						{
 							// Change Server Properties button clicked
@@ -91,22 +120,27 @@ class Admin extends Application {
 										$this->agent->update('server_URL', $testURL);
 										$validURL = true;
 
+										$this->data['serverURLFeedback'] = "Server URL successfully updated!";
+										$this->data['serverURLFeedbackType'] = "success";
 										$this->session->statusMessage = "Botcards Server Properties Updated.";
 									} else
 									{
-										$this->data['serverURLError'] = "Update Failed - This is not a Botcard server URL ( " . $testURL . " ).";
+										$this->data['serverURLFeedback'] = "Update Failed - This is not a Botcard server URL ( " . $testURL . " ).";
+										$this->data['serverURLFeedbackType'] = "error";
 										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 									}
 								} else
 								{
-									$this->data['serverURLError'] = "Update Failed - Invalid URL specified ( " . $testURL . " ).";
+									$this->data['serverURLFeedback'] = "Update Failed - Invalid URL specified ( " . $testURL . " ).";
+									$this->data['serverURLFeedbackType'] = "error";
 									$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 								}
 							} else
 							{
 								if (empty($this->input->post('serverURL')))
 								{
-									$this->data['serverURLError'] = "Update Failed - This field cannot be empty!";
+									$this->data['serverURLFeedback'] = "Update Failed - This field cannot be empty!";
+									$this->data['serverURLFeedbackType'] = "error";
 									$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 								}
 							}
@@ -114,38 +148,67 @@ class Admin extends Application {
 							if ($validURL)
 							{
 								$updatedPW = $this->agent->get('server_password')->value != $this->input->post('serverPassword');
-								if ($updatedPW && !empty($this->input->post('serverPassword')))
+								if (($updatedPW && !empty($this->input->post('serverPassword'))) || $updatedURL)
 								{
-									// Updated Password provided
+									// Updated Password provided, or Server URL Changed
 									$testPW = $this->agentRegister(false, $this->input->post('serverPassword'));
 									if ($testPW === TRUE)
 									{
 										// Password valid on server side.
 										$this->agent->update('server_password', $this->input->post('serverPassword'));
 
+										if (!$updatedURL)
+										{
+											// Unchanged URL, just changed password
+											$this->data['serverPasswordFeedback'] = "Server Password is correct and updated!";
+										} else
+										{
+											// Updated URL and Password both matches.
+											$this->data['serverPasswordFeedback'] = "Server Password is correct for the new URL!";
+										}
+										$this->data['serverPasswordFeedbackType'] = "success";
 										$this->session->statusMessage = "Botcards Server Properties Updated.";
 									} elseif ($testPW === FALSE)
 									{
-										// Invalid Password
-										$this->data['serverPasswordError'] = "Update Failed - Server did not accept the password ( " . $this->input->post('serverPassword') . " ).";
+										if (!$updatedURL)
+										{
+											// Invalid Password with existing URL
+											$this->data['serverPasswordFeedback'] = "Update Failed - Server did not accept the password ( " . $this->input->post('serverPassword') . " ).";
+										} else
+										{
+											// Updated URL with incorrect password
+											// To be safe we will put the agent offline.
+											$this->agent->clear(array('auth_token', 'date_registered', 'round_registered', 'last_active_round'));
+											$this->agent->update('agent_online', FALSE);
+
+											// Truncate all related table
+											$this->transactions->truncate();
+											$this->collections->truncate();
+											$this->players->resetPeanuts();
+
+											$this->data['serverPasswordFeedback'] = "Existing password for the updated URL is invalid.  As such this agent is now offline.";
+										}
+										$this->data['serverPasswordFeedbackType'] = "error";
 										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 									} else
 									{
 										// Can't check password at the moment - invalid state.
-										$this->data['serverPasswordError'] = "Update Failed - Server is not ready for us to check password of ( " . $this->input->post('serverPassword') . " ).";
+										$this->data['serverPasswordFeedback'] = "Update Failed - Server is not ready for us to check password of ( " . $this->input->post('serverPassword') . " ).";
+										$this->data['serverPasswordFeedbackType'] = "error";
 										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 									}
 								} else
 								{
 									if (empty($this->input->post('serverPassword')))
 									{
-										$this->data['serverPasswordError'] = "Update Failed - This field cannot be empty!";
+										$this->data['serverPasswordFeedback'] = "Update Failed - This field cannot be empty!";
+										$this->data['serverPasswordFeedbackType'] = "error";
 										$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 									}
 								}
 							} else
 							{
-								$this->data['serverPasswordError'] = "Cannot validate password ( " . $this->input->post('serverPassword') . " as Server URL is invalid.";
+								$this->data['serverPasswordFeedback'] = "Cannot validate password ( " . $this->input->post('serverPassword') . " ) as Server URL is invalid.";
 								$this->session->statusMessage = "Updating Botcards Server Properties failed.  See below.";
 							}
 
@@ -170,14 +233,14 @@ class Admin extends Application {
 								} else
 								{
 									// Invalid code entered
-									$this->data['agentCodeError'] = "Update Failed - Invalid Agent Code.  Code starts with either a or b, followed by one to three numbers.";
+									$this->data['agentCodeFeedback'] = "Update Failed - Invalid Agent Code.  Code starts with either a or b, followed by one to three numbers.";
 									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
 								}
 							} else
 							{
 								if (empty($this->input->post('agentCode')))
 								{
-									$this->data['agentCodeError'] = "Update Failed - This field cannot be empty!";
+									$this->data['agentCodeFeedback'] = "Update Failed - This field cannot be empty!";
 									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
 								}
 							}
@@ -192,7 +255,7 @@ class Admin extends Application {
 							{
 								if (empty($this->input->post('agentName')))
 								{
-									$this->data['agentNameError'] = "Update Failed - This field cannot be empty!";
+									$this->data['agentNameFeedback'] = "Update Failed - This field cannot be empty!";
 									$this->session->statusMessage = "Updating Agent Properties failed.  See below.";
 								}
 							}
@@ -209,9 +272,13 @@ class Admin extends Application {
 							if ($this->agent->get('agent_online')->value)
 							{
 								$this->agentRegister();
+								$this->data['toggleAgentFeedback'] = " --- Successfully re-registered the agent with the server.";
+								$this->data['toggleAgentFeedbackType'] = "success";
 								$this->session->statusMessage = "Force / Manual Agent Registration performed.";
 							} else
 							{
+								$this->data['toggleAgentFeedback'] = " --- Cannot force agent registration while agent is offline.";
+								$this->data['toggleAgentFeedbackType'] = "error";
 								$this->session->statusMessage = "You can't force / manually perform agent registration while the agent is offline!";
 							}
 						}
