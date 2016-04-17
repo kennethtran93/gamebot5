@@ -155,8 +155,7 @@ $(document).ready(function () {
 			}
 		],
 		order: [
-			[3, 'desc'],
-			[1, 'asc']
+			[1, 'desc']
 		]
 	});
 });

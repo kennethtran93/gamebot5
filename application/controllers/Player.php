@@ -329,8 +329,6 @@ class Player extends Application {
 							// Oh my, despite the careful checks, something went past it and the server returned a booboo.
 							$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
 							$this->data['staticMessageType'] = "staticError";
-							// Stop processing the page.
-							$this->render();
 						}
 
 						$cards = array();
