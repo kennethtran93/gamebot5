@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-16 22:15 - Fixed updating server URL procedure and checks.  Also re-worded and re-arranged some content in admin management.
 * 2016-04-16 01:00 - Main Feature:  Agent Management.  Agent db table overhauled.  Also tackled some bugs due to some of agent management options.  Placeholders for text fields added.  Buy implementation working again to server.
 * 2016-04-14 21:15 - Fixed Buy Implementation, including checks.  Buy Button now on portfolio page, and only on your own portfolio page.  Added truncating tables options for local db if new round.  Assemble page updated to for state and no card messages.  Added new card slices from server.
 * 2016-04-14 11:33 - Done implementing the buy function

@@ -169,6 +169,10 @@ label.error, .error {
 	font-style: italic;
 }
 
+.success {
+	color: green;
+}
+
 nav ul li.currentPage {
 	background: rgba(110,110,110,0.6);
 }

@@ -313,27 +313,25 @@ class Application extends CI_Controller {
 	{
 		if (!$updated)
 		{
-			if ($this->agent->get('agent_online')->value)
-			{
-				$ch = curl_init();
-				curl_setopt($ch, CURLOPT_URL, $this->serverURL . "/status");
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-				$result = curl_exec($ch);
-				curl_close($ch);
 
-				$xml = simplexml_load_string($result);
-				// Convert object to array
-				$status = get_object_vars($xml);
-				// Just grammatical stuff
-				if ($status['countdown'] == 1)
-				{
-					$status['s'] = "";
-				} else
-				{
-					$status['s'] = "s";
-				}
-				return $status;
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $this->serverURL . "/status");
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			$result = curl_exec($ch);
+			curl_close($ch);
+
+			$xml = simplexml_load_string($result);
+			// Convert object to array
+			$status = get_object_vars($xml);
+			// Just grammatical stuff
+			if ($status['countdown'] == 1)
+			{
+				$status['s'] = "";
+			} else
+			{
+				$status['s'] = "s";
 			}
+			return $status;
 		} else
 		{
 			// Try connecting to updated server URL to get its status
@@ -343,8 +341,7 @@ class Application extends CI_Controller {
 				$curl_options = array(
 					CURLOPT_URL				 => $testURL . "/status",
 					CURLOPT_CONNECTTIMEOUT	 => 10,
-					CURLOPT_HEADER			 => TRUE,
-					CURLOPT_NOBODY			 => TRUE,
+					CURLOPT_HTTPGET			 => 1,
 					CURLOPT_RETURNTRANSFER	 => TRUE,
 					CURLOPT_TIMEOUT			 => 15
 				);
@@ -353,17 +350,20 @@ class Application extends CI_Controller {
 				$response = curl_exec($ch);
 				$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 				curl_close($ch);
-				if ($httpcode >= 200 && $httpcode < 400 && $response)
+
+				if ($httpcode >= 200 && $httpcode < 400 && $response !== FALSE)
 				{
 					libxml_use_internal_errors(true);
 					$xml = simplexml_load_string($response);
+
+
 					if ($xml !== FALSE)
 					{
 						if (!empty($xml->round) &&
 								!is_null($xml->state) &&
-								!empty($xml->countdown) &&
+								!is_null($xml->countdown) &&
 								!empty($xml->current) &&
-								!empty($xml->duration) &&
+								!is_null($xml->duration) &&
 								!empty($xml->upcoming) &&
 								!empty($xml->alarm) &&
 								!empty($xml->now))
@@ -432,7 +432,8 @@ class Application extends CI_Controller {
 				"name"		 => $this->agent->get('name')->value,
 				"password"	 => $this->agent->get('server_password')->value);
 
-			if (!$live && !empty($testPassword)) {
+			if (!$live && !empty($testPassword))
+			{
 				// Testing password
 				$data['password'] = $testPassword;
 			}
@@ -446,6 +447,7 @@ class Application extends CI_Controller {
 
 			$response = curl_exec($posturl);
 			curl_close($posturl);
+
 
 			$xml = simplexml_load_string($response);
 
@@ -499,13 +501,15 @@ class Application extends CI_Controller {
 		{
 			// State is closed or setup.
 			$newRound = true;
-			if (!$live) {
+			if (!$live)
+			{
 				// Invalid state - can't test password
 				return NULL;
 			}
 		}
-		
-		if (!$live) {
+
+		if (!$live)
+		{
 			// Invalid state - can't test password
 			return NULL;
 		}
