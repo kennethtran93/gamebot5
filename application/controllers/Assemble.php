@@ -92,7 +92,7 @@ class Assemble extends Application {
 					// Iterate through the object returned from collections
 					foreach ($playerCollection as $row)
 					{
-						$piece = $row->Piece; // Grab token in Piece column
+						$piece = $row->Piece; // Grab value in Piece column
 						$series = substr($piece, 0, 2); // Extract first two numbers
 						$type = strtoupper(substr($piece, 2, 1)); // Extract the letter after series
 						$part = substr($piece, -1, 1); // Extract the last number for part
