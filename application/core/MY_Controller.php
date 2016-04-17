@@ -75,11 +75,21 @@ class Application extends CI_Controller {
 		// Check if user is logged in or not, and display according login/logout part
 		$this->userSession();
 
-		// Agent Registration to server, if agent is online
+		// If agent is online...
 		if ($this->agent->get('agent_online')->value)
 		{
-			$this->agentRegister();
+			// Grab latest bot info from server.
 			$this->series->getBotSeries($this->serverURL);
+
+			$status = $this->getStatus();
+			// Check round
+			if ($this->agent->get('last_active_round')->value != $status['round'])
+			{
+				// Truncate all related table
+				$this->transactions->truncate();
+				$this->collections->truncate();
+				$this->players->resetPeanuts();
+			}
 		}
 	}
 
@@ -459,10 +469,8 @@ class Application extends CI_Controller {
 					return FALSE;
 				}
 				// Whoops, wrong password specified
-				$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
+				$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message . ".  Please inform an administrator of this agent to fix this.";
 				$this->data['staticMessageType'] = "staticError";
-				// Stop processing the page.
-				$this->render();
 			}
 			if (!empty($xml->token))
 			{

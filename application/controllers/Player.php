@@ -303,81 +303,92 @@ class Player extends Application {
 			//check if status is open
 			if ($status['state'] == 3)
 			{
-				// Get Player
-				$player = $this->players->get($this->session->userdata('username'));
-
-				// Check peanut count first
-				if ($player->Peanuts >= 20)
+				$this->agentRegister();
+				// Check if round is current
+				if ($this->agent->get('last_active_round')->value == $status['round'])
 				{
-					// Enough Peanuts for a card pack
-					//calling the columns from the database players column
-					$team = $this->agent->get('code')->value;
-					$token = $this->agent->get('auth_token')->value;
-					$name = $player->Player;
+					// Agent is still in its current round
+					// Get Player
+					$player = $this->players->get($this->session->userdata('username'));
 
-					$buyInfo = array(
-						'team'	 => $team,
-						'token'	 => $token,
-						'player' => $name);
-
-					$string = http_build_query($buyInfo);
-
-					//send post request to BCC/buy 
-					$posturl = curl_init($this->serverURL . '/buy');
-					curl_setopt($posturl, CURLOPT_POST, true);
-					curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
-					curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
-
-					$response = curl_exec($posturl);
-					curl_close($posturl);
-
-					$xml = simplexml_load_string($response);
-
-					if (!empty($xml->message))
+					// Check peanut count first
+					if ($player->Peanuts >= 20)
 					{
-						// Oh my, despite the careful checks, something went past it and the server returned a booboo.
-						$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
-						$this->data['staticMessageType'] = "staticError";
-						// Stop processing the page.
-						$this->render();
-					}
+						// Enough Peanuts for a card pack
+						//calling the columns from the database players column
+						$team = $this->agent->get('code')->value;
+						$token = $this->agent->get('auth_token')->value;
+						$name = $player->Player;
 
-					$cards = array();
-					foreach ($xml->certificate as $certificate)
-					{
-						$timestamp = date('Y-m-d H:i:s', (int) $certificate->datetime);
-						$record = array(
-							'token'		 => (string) $certificate->token,
-							'piece'		 => (string) $certificate->piece,
-							'player'	 => (string) $certificate->player,
-							'datetime'	 => $timestamp
+						$buyInfo = array(
+							'team'	 => $team,
+							'token'	 => $token,
+							'player' => $name);
+
+						$string = http_build_query($buyInfo);
+
+						//send post request to BCC/buy 
+						$posturl = curl_init($this->serverURL . '/buy');
+						curl_setopt($posturl, CURLOPT_POST, true);
+						curl_setopt($posturl, CURLOPT_POSTFIELDS, $string);
+						curl_setopt($posturl, CURLOPT_RETURNTRANSFER, true);
+
+						$response = curl_exec($posturl);
+						curl_close($posturl);
+
+						$xml = simplexml_load_string($response);
+
+						if (!empty($xml->message))
+						{
+							// Oh my, despite the careful checks, something went past it and the server returned a booboo.
+							$this->data['staticMessage'] = "Oh my, the server returned an error:  " . $xml->message;
+							$this->data['staticMessageType'] = "staticError";
+							// Stop processing the page.
+							$this->render();
+						}
+
+						$cards = array();
+						foreach ($xml->certificate as $certificate)
+						{
+							$timestamp = date('Y-m-d H:i:s', (int) $certificate->datetime);
+							$record = array(
+								'token'		 => (string) $certificate->token,
+								'piece'		 => (string) $certificate->piece,
+								'player'	 => (string) $certificate->player,
+								'datetime'	 => $timestamp
+							);
+							$cards[] = $record;
+						}
+
+						$this->collections->add_batch($cards); // Insert batch of cards into db
+
+						$transactions = array(
+							'DateTime'	 => date('Y-m-d H:i:s'),
+							'Player'	 => $name,
+							'Series'	 => NULL,
+							'Trans'		 => 'buy'
 						);
-						$cards[] = $record;
+
+						$this->transactions->add($transactions); // Add Transaction Record
+
+						$updatePlayer = array(
+							'Player'	 => $name,
+							'Peanuts'	 => $xml['balance']
+						);
+
+						$this->players->update($updatePlayer);
+
+						$this->session->statusMessage = "Successfully exchanged 20 peanuts for a card pack.  Your balance remaining has been updated!";
+					} else
+					{
+						// Peanut Count less than 20 - can't purchase card stack
+						$this->session->statusMessage = "Not Enough Peanuts to purchase card pack!";
 					}
-
-					$this->collections->add_batch($cards); // Insert batch of cards into db
-
-					$transactions = array(
-						'DateTime'	 => date('Y-m-d H:i:s'),
-						'Player'	 => $name,
-						'Series'	 => NULL,
-						'Trans'		 => 'buy'
-					);
-
-					$this->transactions->add($transactions); // Add Transaction Record
-
-					$updatePlayer = array(
-						'Player'	 => $name,
-						'Peanuts'	 => $xml['balance']
-					);
-
-					$this->players->update($updatePlayer);
-
-					$this->session->statusMessage = "Successfully exchanged 20 peanuts for a card pack.  Your balance remaining has been updated!";
 				} else
 				{
-					// Peanut Count less than 20 - can't purchase card stack
-					$this->session->statusMessage = "Not Enough Peanuts to purchase card pack!";
+					// Current agent round does not match server current round
+					$this->session->statusMessage = "Unable to process the purchase request.  The server's current round has been updated.  All existing cards and transactions have been removed.";
+					redirect($_SERVER['REQUEST_URI']);
 				}
 			} else
 			{
