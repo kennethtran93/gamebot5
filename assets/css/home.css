@@ -8,45 +8,50 @@ div.content-left {
 	display: inline-block;
 }
 
-#bot_summary {
-	border: black solid 1.5px;
-	min-height: 150px;
-}
-
-div#player_info {
+div.content-right {
 	width: 50%;
 	float: right;
-	margin-right: 1em;
-	border: black solid 1.5px;
+	display: inline-block;
 }
-#player_info > h3, #bot_summary > h3 {
+
+#bot_summary,
+#latest_activity,
+div#player_info,
+div#latest_transactions {
+	border: black solid 1.5px;
+	min-height: 150px;
+	padding-bottom: 15px;
+}
+
+#player_info > h3, 
+#bot_summary > h3,
+#latest_activity > h3,
+#latest_transactions > h3{
 	padding-left: 1em;
 }
 
 @media screen and (max-width: 1040px) {
-	#bot_summary {
+	#bot_summary,
+	#latest_activity,
+	div#player_info,
+	div#latest_transactions {
 		width: 100%;
-		border: black solid 1px;
-	}
-	div#player_info {
 		border: black solid 1px;
 	}
 }
 @media only screen and (max-width: 980px) {
-	div.content-left {
+	div.content-left,
+	div.content-right {
 		width: 95%;
 		display: inline-block;
+		float: none;
 	}
 
-	#bot_summary {
+	#bot_summary,
+	#latest_activity,
+	div#player_info,
+	div#latest_transactions {
 		border: none;
-	}
-	div#player_info {
-		border: none;
-	}
-
-	div#player_info {
-		width: 95%;
 		display: inline-block;
 		float: none;
 	}

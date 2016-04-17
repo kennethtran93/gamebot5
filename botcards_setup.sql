@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS `players` (
 	`DateRegistered`	TIMESTAMP		DEFAULT CURRENT_TIMESTAMP	NOT NULL,
 	`LastUpdated`		DATETIME,
 	`Peanuts`			INT(5)			DEFAULT 100					NOT NULL,
+	`last_active_round`	INT(5)			DEFAULT 0					NOT NULL,
 	CONSTRAINT `players_pk`
 		PRIMARY KEY (`Player`)
 );

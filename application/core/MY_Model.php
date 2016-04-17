@@ -301,6 +301,18 @@ class MY_Model extends CI_Model implements Active_Record {
 			return null;
 	}
 
+	// Return the most recent records as a result set
+	function trailing($count = 10)
+	{
+		$start = $this->db->count_all($this->_tableName) - $count;
+		if ($start < 0)
+			$start = 0;
+		$this->db->limit($count, $start);
+		$this->db->order_by($this->_keyField, 'desc');
+		$query = $this->db->get($this->_tableName);
+		return $query->result();
+	}
+
 	// Truncate Table
 	function truncate()
 	{

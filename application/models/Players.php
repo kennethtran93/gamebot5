@@ -31,9 +31,16 @@ class Players extends MY_Model {
 			return null;
 		return $query->row();
 	}
-	
-	function resetPeanuts() {
+
+	function resetPeanuts()
+	{
 		$this->db->update($this->_tableName, array('Peanuts' => 100));
 	}
 
+	function all_summary($round = 0) {
+		$this->db->select('Player, Peanuts');
+		$this->db->where('last_active_round', $round);
+		$query = $this->db->get($this->_tableName);
+		return $query->result();
+	}
 }
