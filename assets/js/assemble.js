@@ -7,49 +7,27 @@ $(document).ready(function () {
 	// On dropdown changes, replace image with selected bot piece image, and alter alt description
 	$('#top').change(function () {
 		top = $(this).val();
+		$('#hidden_topPiece').val($('#top option:selected').text());
 		$('#topPiece').attr({
-			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + top + '.jpeg',
+			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + top.substr(0,5) + '.jpeg',
 			alt: $('#top option:selected').text()
 		});
 	});
 	$('#middle').change(function () {
 		middle = $(this).val();
+		$('#hidden_middlePiece').val($('#middle option:selected').text());
 		$('#middlePiece').attr({
-			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + middle + '.jpeg',
+			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + middle.substr(0,5) + '.jpeg',
 			alt: $('#middle option:selected').text()
 		});
 	});
 	$('#bottom').change(function () {
 		bottom = $(this).val();
+		$('#hidden_bottomPiece').val($('#bottom option:selected').text());
 		$('#bottomPiece').attr({
-			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + bottom + '.jpeg',
+			src: window.location.pathname.replace("/assemble", "") + '/assets/images/bot/' + bottom.substr(0,5) + '.jpeg',
 			alt: $('#bottom option:selected').text()
 		});
 	});
 
-	// only enable the assemble button if all three have a bot piece
-	$('#top, #middle, #bottom').change(function () {
-		// Checks for null, "", etc.
-		if (!top || !middle || !bottom) {
-			// Disable Assemble button
-			$('#btnAssemble').prop('disabled', 'disabled');
-		} else {
-			// Enable Assemble button
-			$('#btnAssemble').prop('disabled', false);
-		}
-	});
-
-	// On click of assemble button
-	$('#btnAssemble').click(function () {
-		if ($(this).prop('disabled')) {
-			// just in case - if button is disabled and somehow a user click went through...
-			$('#result').text("Please select a bot piece for all three sections first!");
-		} else {
-			$('#result').text("Your BOT will be assembled (in the next version)!");
-			// Disable/Remove dropdowns and assemble button, leaving the 'assembled' image
-			$("#top, #middle, #bottom, #btnAssemble").prop("disabled", "disabled");
-			$(".select, #Assemble").remove();
-			//location.reload(true);
-		}
-	});
 });

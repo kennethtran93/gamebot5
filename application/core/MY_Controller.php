@@ -29,7 +29,7 @@ class Application extends CI_Controller {
 		// our default title
 		$this->data['site-title'] = 'GameBots G5 - CodingForDonuts';
 
-		$this->serverURL = "http://ken-botcards.azurewebsites.net";
+		$this->serverURL = $this->agent->get('server_URL')->value;
 
 		$this->errors = array();
 
