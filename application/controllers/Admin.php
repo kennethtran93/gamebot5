@@ -271,10 +271,19 @@ class Admin extends Application {
 							// Force Agent Registerion (when it's online only)
 							if ($this->agent->get('agent_online')->value)
 							{
-								$this->agentRegister();
-								$this->data['toggleAgentFeedback'] = " --- Successfully re-registered the agent with the server.";
-								$this->data['toggleAgentFeedbackType'] = "success";
-								$this->session->statusMessage = "Force / Manual Agent Registration performed.";
+								$state = $this->getStatus()['state'];
+								if ($state == 2 || $state == 3)
+								{
+									$this->agentRegister();
+									$this->data['toggleAgentFeedback'] = " --- Successfully re-registered the agent with the server.";
+									$this->data['toggleAgentFeedbackType'] = "success";
+									$this->session->statusMessage = "Force / Manual Agent Registration performed.";
+								} else
+								{
+									$this->data['toggleAgentFeedback'] = " --- Unable to re-register agent with server - server state is not ready or open!";
+									$this->data['toggleAgentFeedbackType'] = "error";
+									$this->session->statusMessage = "Unable to perform forced / manual agent registration.";
+								}
 							} else
 							{
 								$this->data['toggleAgentFeedback'] = " --- Cannot force agent registration while agent is offline.";
