@@ -241,7 +241,7 @@ class Assemble extends Application {
 				{
 					// Current agent round does not match server current round
 					$this->session->statusMessage = "Unable to process the sell request.  The server's current round has been updated.  All existing cards and transactions have been removed.";
-					redirect($_SERVER['REQUEST_URI'], "refresh");
+					redirect($_SERVER['REQUEST_URI']);
 				}
 			} else
 			{

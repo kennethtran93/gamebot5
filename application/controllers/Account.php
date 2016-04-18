@@ -37,7 +37,7 @@ class Account extends Application {
 				if (!empty($name))
 				{
 					// User is logged in already.  Redirect to main account page
-					redirect("/account", "refresh");
+					redirect("/account");
 				}
 				$this->data['pageTitle'] = 'Login';
 				$this->data['staticMessage'] = "Use the login form in the navigation section to login.";
@@ -46,7 +46,7 @@ class Account extends Application {
 				if (!empty($name))
 				{
 					// Player already logged in.
-					redirect("/account", "refresh");
+					redirect("/account");
 				}
 
 				//  At this point Not Logged In
@@ -288,7 +288,7 @@ class Account extends Application {
 				}
 				break;
 			default:
-				redirect("/account", "refresh");
+				redirect("/account");
 				break;
 		}
 

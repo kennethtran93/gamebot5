@@ -36,7 +36,7 @@ class Admin extends Application {
 				if (!is_null($this->input->post('adminReturn')))
 				{
 					// Admin clicked return to main page button
-					redirect('/admin', "refresh");
+					redirect('/admin');
 				}
 				switch ($page)
 				{
@@ -216,7 +216,7 @@ class Admin extends Application {
 							{
 								$this->session->statusMessage = "Nothing to update for the Botcards Server Properties.";
 								// prevent rechecking the same data posted.
-								redirect("/admin/agent", "refresh");
+								redirect("/admin/agent");
 							}
 						} elseif (!is_null($this->input->post('changeAgentProperties')))
 						{
@@ -264,7 +264,7 @@ class Admin extends Application {
 							{
 								$this->session->statusMessage = "Nothing to update for the Agent Properties.";
 								// prevent rechecking the same data posted.
-								redirect("/admin/agent", "refresh");
+								redirect("/admin/agent");
 							}
 						} elseif (!is_null($this->input->post('forceAgentRegistration')))
 						{
@@ -370,35 +370,35 @@ class Admin extends Application {
 							$count = $this->performAction('confirmResetPasswords');
 
 							$this->session->statusMessage = "Action:  Reset Password to their username:  " . $count['success'] . " done/success; " . $count['failed'] . " failed.";
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} elseif (!is_null($this->input->post('confirmDeleteAccounts')))
 						{
 							// Delete Account(s) confirmed
 							$count = $this->performAction('confirmDeleteAccounts');
 
 							$this->session->statusMessage = "Action:  Delete Account from Database:  " . $count['success'] . " done/success; " . $count['failed'] . " failed.";
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} elseif (!is_null($this->input->post('confirmResetAvatars')))
 						{
 							// Reset Avatar(s) confirmed
 							$count = $this->performAction('confirmResetAvatars');
 
 							$this->session->statusMessage = "Action:  Reset avatar to generic avatar:  " . $count['success'] . " done/success; " . $count['failed'] . " failed.  Any custom avatars uploaded from these accounts have been deleted from the server.";
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} elseif (!is_null($this->input->post('confirmPromoteToAdmin')))
 						{
 							// Delete Account(s) confirmed
 							$count = $this->performAction('confirmPromoteToAdmin');
 
 							$this->session->statusMessage = "Action:  Admin Role Promotion:  " . $count['success'] . " done/success; " . $count['failed'] . " failed.";
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} elseif (!is_null($this->input->post('confirmRemoveAdmin')))
 						{
 							// Delete Account(s) confirmed
 							$count = $this->performAction('confirmRemoveAdmin');
 
 							$this->session->statusMessage = "Action:  Revoke Admin Role:  " . $count['success'] . " done/success; " . $count['failed'] . " failed.";
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} else
 						{
 							// Possibly an initial visit to the player maintenance page,
@@ -423,16 +423,16 @@ class Admin extends Application {
 						if (!is_null($this->input->post('adminAgent')))
 						{
 							// Admin Agent Management Button Clicked
-							redirect('/admin/agent', "refresh");
+							redirect('/admin/agent');
 						} elseif (!is_null($this->input->post('adminPlayer')))
 						{
 							// Admin Player Management Button Clicked
-							redirect('/admin/player', "refresh");
+							redirect('/admin/player');
 						} elseif (!empty($page))
 						{
 							// User trying to access invalid page/function
 							$this->session->statusMessage = "You were trying to manage something that doesn't exist!  Try again.";
-							redirect('/admin', "refresh");
+							redirect('/admin');
 						} else
 						{
 							// We're accessing the /admin page without any additional stuff
