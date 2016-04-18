@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-17 20:45 - Additional checks added for manual agent registration.
 * 2016-04-07 03:55 - Sell function working.
 * 2016-04-17 00:30 - Player Summary changed to Active Players Leaderboard.  Added Server Latest Transactions and Agent latest transactions
 * 2016-04-16 23:00 - Truncate tables on pageload if server is on new round.  Moved agent registration to buy function as the agent would then be considered active.
