@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-17 21:30 - Fixed Latest transactions for local agent.
 * 2016-04-17 20:45 - Additional checks added for manual agent registration.
 * 2016-04-07 03:55 - Sell function working.
 * 2016-04-17 00:30 - Player Summary changed to Active Players Leaderboard.  Added Server Latest Transactions and Agent latest transactions

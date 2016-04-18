@@ -308,7 +308,7 @@ class MY_Model extends CI_Model implements Active_Record {
 		if ($start < 0)
 			$start = 0;
 		$this->db->limit($count, $start);
-		$this->db->order_by($this->_keyField, 'desc');
+		$this->db->order_by($this->_keyField, 'asc');
 		$query = $this->db->get($this->_tableName);
 		return $query->result();
 	}
