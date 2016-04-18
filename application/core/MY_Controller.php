@@ -78,9 +78,6 @@ class Application extends CI_Controller {
 		// If agent is online...
 		if ($this->agent->get('agent_online')->value)
 		{
-			// Grab latest bot info from server.
-			$this->series->getBotSeries($this->serverURL);
-
 			$status = $this->getStatus();
 			// Check round
 			if ($this->agent->get('last_active_round')->value != $status['round'])
@@ -90,6 +87,8 @@ class Application extends CI_Controller {
 				$this->collections->truncate();
 				$this->players->resetPeanuts();
 			}
+			// Grab latest bot info from server.
+			$this->series->getBotSeries($this->serverURL);
 		}
 	}
 
