@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-17 21:35 - Get latest bot info after truncating tables if needed.
 * 2016-04-17 21:30 - Fixed Latest transactions for local agent.
 * 2016-04-17 20:45 - Additional checks added for manual agent registration.
 * 2016-04-07 03:55 - Sell function working.
