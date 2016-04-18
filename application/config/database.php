@@ -75,11 +75,11 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
+	'hostname' => 'gamebot5.database.windows.net',
 	'username' => 'root',
 	'password' => '',
-	'database' => 'botcards',
-	'dbdriver' => 'mysqli',
+	'database' => 'gamebot5',
+	'dbdriver' => 'sqlsrv',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
