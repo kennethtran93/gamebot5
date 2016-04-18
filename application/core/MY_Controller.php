@@ -285,7 +285,7 @@ class Application extends CI_Controller {
 			} elseif (!is_null($this->input->post('register')))
 			{
 				// register button clicked
-				redirect("/account/register");
+				redirect("/account/register", "refresh");
 			} else
 			{
 				$this->session->loginMessage = "You are currently viewing this site as a guest.  Login or register to do more awesome things!";
@@ -299,7 +299,7 @@ class Application extends CI_Controller {
 				$this->session->sess_destroy();
 				// Normally a successfully logged out message would be generated, 
 				// but since we're doing a redirect after destroying a session, it's useless.
-				redirect($_SERVER['REQUEST_URI']);
+				redirect($_SERVER['REQUEST_URI'], "refresh");
 			} else
 			{
 				// User still logged in.

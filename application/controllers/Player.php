@@ -40,7 +40,7 @@ class Player extends Application {
 			if (!$this->players->exists($name) || is_null($this->session->username))
 			{
 				// send back to initial player page
-				redirect('/player');
+				redirect('/player', "refresh");
 			}
 		}
 
@@ -373,7 +373,7 @@ class Player extends Application {
 				{
 					// Current agent round does not match server current round
 					$this->session->statusMessage = "Unable to process the purchase request.  The server's current round has been updated.  All existing cards and transactions have been removed.";
-					redirect($_SERVER['REQUEST_URI']);
+					redirect($_SERVER['REQUEST_URI'], "refresh");
 				}
 			} else
 			{
