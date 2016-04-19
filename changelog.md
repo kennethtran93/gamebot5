@@ -2,6 +2,7 @@
 >Template: * YYYY-MM-DD HH:MM - Comment
 
 ### Changelog for Assignment 2
+* 2016-04-07 18:55 - Changed getting bot series descriptions from server to once per round, previously on each page load while agent was online.
 * 2016-04-17 06:05 - fixed display of latest individual player transactions
 * 2016-04-17 21:35 - Get latest bot info after truncating tables if needed.
 * 2016-04-17 21:30 - Fixed Latest transactions for local agent.

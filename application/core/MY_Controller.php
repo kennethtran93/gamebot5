@@ -86,9 +86,10 @@ class Application extends CI_Controller {
 				$this->transactions->truncate();
 				$this->collections->truncate();
 				$this->players->resetPeanuts();
+
+				// Grab latest bot info from server - only once per round.
+				$this->series->getBotSeries($this->serverURL);
 			}
-			// Grab latest bot info from server.
-			$this->series->getBotSeries($this->serverURL);
 		}
 	}
 
